@@ -21,6 +21,7 @@
 			<menu>
 				<li><a href="#quick-start"><span class="menu__icon">🚀</span>Quick start</a></li>
 				<li><a href="#mapping"><span class="menu__icon">🖇️</span>Mapping</a></li>
+				<li><a href="#timestamps"><span class="menu__icon">🕒</span>Timestamps</a></li>
 				<li><a href="#constraints"><span class="menu__icon">🔒</span>Constraints</a></li>
 				<li><a href="#lifecycle"><span class="menu__icon">♻️</span>Lifecycle</a></li>
 				<li><a href="#querying"><span class="menu__icon">🔍</span>Querying</a></li>
@@ -123,8 +124,10 @@
 				<figure class="code">
 					<figcaption><span>users</span><span>SQL</span></figcaption>
 					<pre><code><span class="tok-kw">CREATE TABLE</span> users (
-	id    <span class="tok-kw">TEXT</span> <span class="tok-kw">PRIMARY KEY</span>,
-	email <span class="tok-kw">TEXT</span> <span class="tok-kw">NOT NULL</span>
+id                   <span class="tok-kw">TEXT</span> <span class="tok-kw">PRIMARY KEY</span>,
+email                <span class="tok-kw">TEXT</span> <span class="tok-kw">NOT NULL</span>,
+activeso_created_at <span class="tok-kw">TEXT</span> <span class="tok-kw">NOT NULL DEFAULT CURRENT_TIMESTAMP</span>,
+activeso_updated_at <span class="tok-kw">TEXT</span> <span class="tok-kw">NOT NULL DEFAULT CURRENT_TIMESTAMP</span>
 );
 
 <span class="tok-kw">CREATE UNIQUE INDEX</span> activeso_7573657273_656d61696c_unique
@@ -132,6 +135,38 @@
 				</figure>
 			</div>
 			<p><code>db</code> tags choose column names; exported fields without one derive a snake_case name. Plain strings, numbers, and booleans read SQL <code>NULL</code> as their Go zero value, keeping rows readable after additive nullable migrations. Use <code>database/sql</code> nullable types, such as <code>sql.NullString</code>, when your application must distinguish <code>NULL</code> from an empty or zero value.</p>
+		</section>
+
+		<section class="topic" id="timestamps">
+			<h3 class="divider divider--overflow-right">Timestamps, managed for you</h3>
+			<p>Embedding <code>activeso.Record</code> promotes <code>CreatedAt</code> and <code>UpdatedAt</code> as UTC <code>time.Time</code> fields. No model fields or tags are required: <code>AutoMigrate(ctx)</code> creates the implicit <code>activeso_created_at</code> and <code>activeso_updated_at</code> columns, including them when it upgrades an existing table.</p>
+			<div class="methods">
+				<section class="method">
+					<div class="method__head">
+						<p class="method__signature">CreatedAt / UpdatedAt</p>
+						<p class="method__desc">Read the timestamps directly from any record ActiveSo created or loaded.</p>
+					</div>
+					<figure class="code">
+						<pre><code>user, err := userModel.Create(ctx, User{Email: <span class="tok-str">"hello@null.live"</span>})
+<span class="tok-com">// user.CreatedAt and user.UpdatedAt are UTC time.Time values</span>
+fmt.Println(user.CreatedAt, user.UpdatedAt)</code></pre>
+					</figure>
+				</section>
+				<section class="method">
+					<div class="method__head">
+						<p class="method__signature">Save<span class="punct">(ctx)</span></p>
+						<p class="method__desc">Refreshes <code>UpdatedAt</code> after a successful write; <code>CreatedAt</code> stays fixed.</p>
+					</div>
+					<figure class="code">
+						<pre><code>user.Email = <span class="tok-str">"updated@null.live"</span>
+<span class="tok-kw">if</span> err := user.Save(ctx); err != <span class="tok-kw">nil</span> {
+	<span class="tok-kw">return</span> err
+}
+fmt.Println(user.UpdatedAt)</code></pre>
+					</figure>
+				</section>
+			</div>
+			<p>New tables use <code>CURRENT_TIMESTAMP</code> defaults. ActiveSo installs triggers that backfill legacy tables, update <code>activeso_updated_at</code> whenever data changes—even through direct SQL—and protect the managed values from arbitrary replacement. <code>Bind(value)</code> attaches persistence behavior but does not load timestamps; a later successful <code>Save(ctx)</code> refreshes them.</p>
 		</section>
 
 		<section class="topic" id="constraints">
@@ -200,7 +235,7 @@ err := user.Save(ctx)</code></pre>
 				<section class="method">
 					<div class="method__head">
 						<p class="method__signature">Bind<span class="punct">(value)</span></p>
-						<p class="method__desc">Attaches persistence behavior to an existing record pointer, such as one loaded outside ActiveSo.</p>
+						<p class="method__desc">Attaches persistence behavior to an existing record pointer, such as one loaded outside ActiveSo. It does not load timestamps.</p>
 					</div>
 					<figure class="code">
 						<pre><code>externalUser := &amp;User{ID: <span class="tok-str">"8b291a21-e69b-47ed-a3e0-f43e7609b26d"</span>, Email: <span class="tok-str">"hello@null.live"</span>}
@@ -254,6 +289,29 @@ user.Email = <span class="tok-str">"updated@null.live"</span>
 <span class="tok-kw">for</span> _, user := <span class="tok-kw">range</span> users {
 	fmt.Println(user.Email)
 }</code></pre>
+					</figure>
+				</section>
+				<section class="method">
+					<div class="method__head">
+						<p class="method__signature">CreatedAt</p>
+						<p class="method__desc">The UTC time when ActiveSo created the record.</p>
+					</div>
+					<figure class="code">
+						<pre><code>user, err := userModel.Create(ctx, User{Email: <span class="tok-str">"hello@null.live"</span>})
+fmt.Println(user.CreatedAt)</code></pre>
+					</figure>
+				</section>
+				<section class="method">
+					<div class="method__head">
+						<p class="method__signature">UpdatedAt</p>
+						<p class="method__desc">The UTC time of the record's most recent successful update.</p>
+					</div>
+					<figure class="code">
+						<pre><code>user.Email = <span class="tok-str">"updated@null.live"</span>
+<span class="tok-kw">if</span> err := user.Save(ctx); err != <span class="tok-kw">nil</span> {
+<span class="tok-kw">return</span> err
+}
+fmt.Println(user.UpdatedAt)</code></pre>
 					</figure>
 				</section>
 				<section class="method">
