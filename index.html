@@ -211,7 +211,7 @@ user.Email = <span class="tok-str">"updated@null.live"</span>
 			<p>A record loaded outside ActiveSo must be attached first with <code>Bind(value)</code>; an unbound record's <code>Save</code> and <code>Delete</code> return <code>activeso.ErrUnboundRecord</code>. A bound record's ID is captured when it becomes bound and cannot be changed — modifying it makes <code>Save</code> and <code>Delete</code> return <code>activeso.ErrIDChanged</code>; create a new record when you need a new identity.</p>
 		</section><section class="topic" id="querying">
 			<h3 class="divider divider--overflow-right">Querying, including vectors</h3>
-			<p>Every call below is real API surface — parameterized <code>Where</code> chains with <code>OrderBy</code>, <code>Limit</code>, <code>First</code>, and <code>All</code>, and <code>Nearest</code> orders by cosine distance over a Turso <code>vector32</code> column.</p>
+			<p>Every call below is actual API surface. Parameterized <code>Where</code> chains with <code>OrderBy</code>, <code>Limit</code>, <code>First</code>, and <code>All</code>, and <code>Nearest</code> orders by cosine distance over a Turso <code>vector32</code> column.</p>
 			<div class="methods">
 				<section class="method">
 					<div class="method__head">
