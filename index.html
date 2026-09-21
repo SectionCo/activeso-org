@@ -127,7 +127,7 @@
 
 	ID    <span class="tok-kw">string</span> <span class="tok-tag">`db:"id"`</span>
 	Email <span class="tok-kw">string</span> <span class="tok-tag">`db:"email" activeso:"not_null,unique"`</span>
-	Company <span class="tok-kw">string</span> <span class="tok-tag">`db:"company" activeso:"index"`</span>
+	Company <span class="tok-kw">string</span> <span class="tok-tag">`db:"company" activeso:"index,belongs_to=companies(id)"`</span>
 }</code></pre>
 				</figure>
 				<div class="mapping__arrow">maps to</div>
@@ -136,7 +136,7 @@
 					<pre><code><span class="tok-kw">CREATE TABLE</span> users (
 id                   <span class="tok-kw">TEXT</span> <span class="tok-kw">PRIMARY KEY</span>,
 email                <span class="tok-kw">TEXT</span> <span class="tok-kw">NOT NULL</span>,
-company              <span class="tok-kw">TEXT</span>,
+company              <span class="tok-kw">TEXT</span> <span class="tok-kw">REFERENCES</span> companies(id),
 activeso_created_at <span class="tok-kw">TEXT</span> <span class="tok-kw">NOT NULL DEFAULT CURRENT_TIMESTAMP</span>,
 activeso_updated_at <span class="tok-kw">TEXT</span> <span class="tok-kw">NOT NULL DEFAULT CURRENT_TIMESTAMP</span>
 );
