@@ -38,14 +38,12 @@ The visual vocabulary is lifted from section.co's live CSS:
 
 ## Local preview
 
-Any static file server from the repository root works:
+Run a static file server such as [Caddy](https://caddyserver.com/) from the repository root:
 
 ```sh
-python3 -m http.server 8000
+caddy file-server --listen :8000
 # open http://localhost:8000
 ```
-
-(Opening `index.html` directly as a file also works; assets resolve relative to the root.)
 
 ## Deployment
 
