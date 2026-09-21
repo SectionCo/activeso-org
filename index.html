@@ -148,6 +148,13 @@ activeso_updated_at <span class="tok-kw">TEXT</span> <span class="tok-kw">NOT NU
 	<span class="tok-kw">ON</span> users (company);</code></pre>
 				</figure>
 			</div>
+			<div class="relationship-map" aria-label="User.Company maps to users.company, which references companies.id">
+				<code>User.Company</code>
+				<span class="relationship-map__arrow" aria-hidden="true">maps to</span>
+				<code>users.company</code>
+				<span class="relationship-map__arrow" aria-hidden="true">references</span>
+				<code>companies.id</code>
+			</div>
 			<p><code>db</code> tags choose column names; exported fields without one derive a snake_case name. Plain strings, numbers, and booleans read SQL <code>NULL</code> as their Go zero value, keeping rows readable after additive nullable migrations. Use <code>database/sql</code> nullable types, such as <code>sql.NullString</code>, when your application must distinguish <code>NULL</code> from an empty or zero value.</p>
 		</section>
 

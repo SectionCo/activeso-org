@@ -395,6 +395,33 @@
 		}
 	}
 
+	.relationship-map {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: 0.55rem;
+		margin: 1.25rem 0;
+		padding: 0.75rem 1rem;
+		border: 0.5px solid var(--color-primary);
+		background: color-mix(in oklch, var(--color-primary) 3%, transparent);
+		font-family: ui-monospace, "SF Mono", Menlo, monospace;
+		font-size: 0.85rem;
+
+		code {
+			padding: 0.15rem 0.35rem;
+			background: var(--color-off-white);
+		}
+	}
+
+	.relationship-map__arrow {
+		color: var(--color-accent--darker);
+		font-family: "Oswald", sans-serif;
+		font-size: 0.75rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
 	@media (max-width: 700px) {
 		.mapping {
 			grid-template-columns: 1fr;
