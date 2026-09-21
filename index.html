@@ -136,8 +136,6 @@
 			<p>Constraints live in the struct tag. An unknown <code>activeso</code> constraint causes <code>activeso.Model[T](db)</code> to panic, so schema mistakes are caught during setup.</p>
 			<div class="table-scroll" role="region" aria-label="Data table" tabindex="0">
 			<table class="table">
-			</table>
-			</div>
 				<thead>
 					<tr><th>Option</th><th>AutoMigrate(ctx) behavior</th><th>Write behavior</th></tr>
 				</thead>
@@ -154,6 +152,7 @@
 					</tr>
 				</tbody>
 			</table>
+			</div>
 		</section>
 
 		<section class="topic" id="lifecycle">
@@ -297,8 +296,6 @@ users, err = userModel.Where(
 			<p><code>AutoMigrate(ctx)</code> is intentionally additive and safe: it never drops data, removes indexes, changes column types, or tightens existing constraints. Destructive changes are separate operations you run during deployment.</p>
 			<div class="table-scroll" role="region" aria-label="Data table" tabindex="0">
 			<table class="table">
-			</table>
-			</div>
 				<thead>
 					<tr><th>Operation</th><th>Required model change</th><th>Effect</th></tr>
 				</thead>
@@ -309,6 +306,7 @@ users, err = userModel.Where(
 					<tr><td>SetNotNull(ctx, column)</td><td>Add <code>not_null</code> to the field's <code>activeso</code> tag.</td><td>Rebuilds the table with <code>NOT NULL</code>; it fails if any existing row contains <code>NULL</code>.</td></tr>
 				</tbody>
 			</table>
+			</div>
 			<p>Each column migration changes only its named target. Rebuilds run inside a transaction — unsupported dependencies cause an error, and failed migrations roll back.</p>
 		</section>
 
@@ -331,8 +329,6 @@ users, err = userModel.Where(
 			</div>
 			<div class="table-scroll" role="region" aria-label="Data table" tabindex="0">
 			<table class="table">
-			</table>
-			</div>
 				<thead>
 					<tr><th>Method</th><th>Path</th><th>Behavior</th></tr>
 				</thead>
@@ -343,6 +339,7 @@ users, err = userModel.Where(
 					<tr><td>POST</td><td><code>/users/:id/delete</code></td><td>Deletes a user.</td></tr>
 				</tbody>
 			</table>
+			</div>
 		</section>
 	</main>
 
