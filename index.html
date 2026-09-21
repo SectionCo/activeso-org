@@ -134,7 +134,10 @@
 		<section class="topic" id="constraints">
 			<h3 class="divider divider--overflow-right">Two constraint options</h3>
 			<p>Constraints live in the struct tag. An unknown <code>activeso</code> constraint causes <code>activeso.Model[T](db)</code> to panic, so schema mistakes are caught during setup.</p>
+			<div class="table-scroll" role="region" aria-label="Data table" tabindex="0">
 			<table class="table">
+			</table>
+			</div>
 				<thead>
 					<tr><th>Option</th><th>AutoMigrate(ctx) behavior</th><th>Write behavior</th></tr>
 				</thead>
@@ -292,7 +295,10 @@ users, err = userModel.Where(
 		<section class="topic" id="migrations">
 			<h3 class="divider divider--overflow-left">Migrations stay deliberate</h3>
 			<p><code>AutoMigrate(ctx)</code> is intentionally additive and safe: it never drops data, removes indexes, changes column types, or tightens existing constraints. Destructive changes are separate operations you run during deployment.</p>
+			<div class="table-scroll" role="region" aria-label="Data table" tabindex="0">
 			<table class="table">
+			</table>
+			</div>
 				<thead>
 					<tr><th>Operation</th><th>Required model change</th><th>Effect</th></tr>
 				</thead>
@@ -323,7 +329,10 @@ users, err = userModel.Where(
 			<div class="intro__actions">
 				<span class="chip"><code>go -C example run .</code><button type="button" data-copy="go -C example run ." aria-label="Copy: go -C example run .">copy</button></span>
 			</div>
+			<div class="table-scroll" role="region" aria-label="Data table" tabindex="0">
 			<table class="table">
+			</table>
+			</div>
 				<thead>
 					<tr><th>Method</th><th>Path</th><th>Behavior</th></tr>
 				</thead>

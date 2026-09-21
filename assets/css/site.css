@@ -454,6 +454,22 @@
 
 	/* ---------- Tables ---------- */
 
+	/* Scroll wrapper: a table wider than its container scrolls here instead of breaking the page. */
+	.table-scroll {
+		max-width: 100%;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		/* Let keyboard users reach and pan the region; focus ring matches the house buttons. */
+		&:focus-visible {
+			outline: 2px solid var(--color-accent--darker);
+			outline-offset: 1px;
+		}
+
+		.table {
+			min-width: min(100%, 40rem); /* keep wide tables wide so columns stay readable while scrolling */
+		}
+	}
+
 	.table {
 		width: 100%;
 		border-collapse: collapse;
