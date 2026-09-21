@@ -57,6 +57,36 @@
 		text-transform: uppercase;
 	}
 
+	/* ---------- Reading progress bar (pure CSS scroll-driven animation) ---------- */
+
+	.reading-progress {
+		position: fixed;
+		top: 0;
+		left: 0;
+		height: 3px;
+		width: 100%;
+		z-index: 50;
+		background-color: color-mix(in oklch, var(--color-primary) 12%, transparent);
+		transform-origin: 0 50%;
+		transform: scaleX(0);
+		animation: reading-progress-grow linear both;
+		animation-timeline: scroll(root);
+	}
+
+	@keyframes reading-progress-grow {
+		from { transform: scaleX(0); }
+		to { transform: scaleX(1); }
+	}
+
+	/* Browsers without scroll-driven animations keep a static hairline; hide it there. */
+	@supports not (animation-timeline: scroll(root)) {
+		.reading-progress { display: none; }
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.reading-progress { display: none; }
+	}
+
 	/* ---------- Header ---------- */
 
 	header {
