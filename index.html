@@ -23,7 +23,9 @@
 				<li><a href="#mapping"><span class="menu__icon">🖇️</span>Mapping</a></li>
 				<li><a href="#timestamps"><span class="menu__icon">🕒</span>Timestamps</a></li>
 				<li><a href="#constraints"><span class="menu__icon">🔒</span>Constraints</a></li>
+				<li><a href="#relationships"><span class="menu__icon">🔗</span>Relationships</a></li>
 				<li><a href="#lifecycle"><span class="menu__icon">♻️</span>Lifecycle</a></li>
+				<li><a href="#lookups"><span class="menu__icon">🔎</span>Lookups</a></li>
 				<li><a href="#querying"><span class="menu__icon">🔍</span>Querying</a></li>
 				<li><a href="#migrations"><span class="menu__icon">🏗️</span>Migrations</a></li>
 				<li><a href="#errors"><span class="menu__icon">⚠️</span>Errors</a></li>
@@ -40,6 +42,8 @@
 
 		<div class="intro__meta">
 			<span>A <a href="https://section.co">Section Co.</a> project</span>
+			<span>·</span>
+			<span><a href="https://github.com/SectionCo/activeso/releases/tag/v1.0.2">v1.0.2</a></span>
 			<span>·</span>
 			<span><a href="https://github.com/SectionCo/activeso/blob/main/LICENSE">MIT licensed</a></span>
 		</div>
@@ -83,6 +87,11 @@
 	}
 	db := sql.OpenDB(connector)
 	<span class="tok-kw">defer</span> db.Close()
+
+	<span class="tok-com">// When using belongs_to, enable foreign-key enforcement for this connection.</span>
+	<span class="tok-kw">if</span> _, err := db.ExecContext(ctx, <span class="tok-str">"PRAGMA foreign_keys = ON"</span>); err != <span class="tok-kw">nil</span> {
+		<span class="tok-kw">return</span> err
+	}
 
 	<span class="tok-com">// Initialize the User model.</span>
 	userModel := activeso.Model[User](db)
@@ -170,7 +179,7 @@ fmt.Println(user.UpdatedAt)</code></pre>
 		</section>
 
 		<section class="topic" id="constraints">
-			<h3 class="divider divider--overflow-right">Three constraint options</h3>
+			<h3 class="divider divider--overflow-right">Five constraint options</h3>
 			<p>Constraints live in the struct tag. An unknown <code>activeso</code> constraint causes <code>activeso.Model[T](db)</code> to panic, so schema mistakes are caught during setup.</p>
 			<div class="table-scroll" role="region" aria-label="Data table" tabindex="0">
 			<table class="table">
@@ -189,14 +198,40 @@ fmt.Println(user.UpdatedAt)</code></pre>
 						<td><code>Create</code> and <code>Save</code> check for an existing value first and return an error matching <code>activeso.ErrUnique</code>; the Turso index remains the concurrency-safe authority.</td>
 					</tr>
 					<tr>
+						<td>index</td>
+						<td>Creates a stable non-unique index for the table and column.</td>
+						<td>Makes equality lookups with <code>FindBy</code> eligible to use a Turso index.</td>
+					</tr>
+					<tr>
 						<td>primary_key</td>
 						<td>Declares the field as the table primary key.</td>
 						<td>Sets the identity used by <code>Find</code>, <code>Save</code>, and <code>Delete</code>.</td>
+					</tr>
+					<tr>
+						<td>belongs_to=table(column)</td>
+						<td>Adds <code>REFERENCES table(column)</code> when creating a table or adding a missing nullable column.</td>
+						<td>With foreign-key enforcement enabled, Turso rejects non-<code>NULL</code> values missing from the referenced column.</td>
 					</tr>
 				</tbody>
 			</table>
 			</div>
 			<p>If no field has <code>primary_key</code>, ActiveSo uses the field mapped to <code>id</code>. Exactly one primary key is required. Supported types are strings, booleans, signed integers, <code>uint8</code>–<code>uint32</code>, and floats; <code>uint</code> and <code>uint64</code> are not supported because Turso stores integers as signed 64-bit values.</p>
+		</section>
+
+		<section class="topic" id="relationships">
+			<h3 class="divider divider--overflow-left">Relationships stay explicit</h3>
+			<p>Use <code>belongs_to=table(column)</code> on the scalar foreign-key field. ActiveSo creates an inline <code>REFERENCES</code> constraint when it creates the table, while your model remains an ordinary Go struct.</p>
+			<figure class="code">
+				<figcaption><span>city.go</span><span>Go</span></figcaption>
+				<pre><code><span class="tok-kw">type</span> City <span class="tok-kw">struct</span> {
+	activeso.Record
+
+	ID       <span class="tok-kw">string</span> <span class="tok-tag">`db:"id"`</span>
+	Name     <span class="tok-kw">string</span> <span class="tok-tag">`db:"name"`</span>
+	RegionID <span class="tok-kw">string</span> <span class="tok-tag">`db:"region_id" activeso:"not_null,belongs_to=regions(id)"`</span>
+}</code></pre>
+			</figure>
+			<p>Enable <code>PRAGMA foreign_keys = ON</code> before using models with <code>belongs_to</code>. SQLite-compatible enforcement is connection-specific, so applications using a connection pool must configure every connection. <code>AutoMigrate(ctx)</code> cannot attach a foreign key to an existing column; use a dedicated migration for that schema change.</p>
 		</section>
 
 		<section class="topic" id="lifecycle">
@@ -263,10 +298,28 @@ user.Email = <span class="tok-str">"updated@null.live"</span>
 				</section>
 			</div>
 			<p>A record loaded outside ActiveSo must be attached first with <code>Bind(value)</code>; an unbound record's <code>Save</code> and <code>Delete</code> return <code>activeso.ErrUnboundRecord</code>. A bound record's ID is captured when it becomes bound and cannot be changed — modifying it makes <code>Save</code> and <code>Delete</code> return <code>activeso.ErrIDChanged</code>; create a new record when you need a new identity.</p>
-		</section><section class="topic" id="querying">
+		</section>
+
+		<section class="topic" id="querying">
 			<h3 class="divider divider--overflow-right">Querying, including vectors</h3>
-			<p>Every call below is actual API surface. Parameterized <code>Where</code> chains with <code>OrderBy</code>, <code>Limit</code>, <code>First</code>, and <code>All</code>, and <code>Nearest</code> orders by cosine distance over a Turso <code>vector32</code> column.</p>
+			<p>Every call below is actual API surface. <code>FindBy</code> provides a mapped-column equality lookup; parameterized <code>Where</code> chains with <code>OrderBy</code>, <code>Limit</code>, <code>First</code>, and <code>All</code>; and <code>Nearest</code> orders by cosine distance over a Turso <code>vector32</code> column.</p>
 			<div class="methods">
+				<section class="method" id="lookups">
+					<div class="method__head">
+						<p class="method__signature">FindBy<span class="punct">(ctx, column, value)</span></p>
+						<p class="method__desc">Loads every record whose mapped column equals <code>value</code>. The column must exist on the model, so ActiveSo never accepts arbitrary SQL here.</p>
+					</div>
+					<figure class="code">
+						<pre><code><span class="tok-kw">type</span> City <span class="tok-kw">struct</span> {
+	activeso.Record
+
+	ID   <span class="tok-kw">string</span> <span class="tok-tag">`db:"id"`</span>
+	Name <span class="tok-kw">string</span> <span class="tok-tag">`db:"name" activeso:"not_null,index"`</span>
+}
+
+cities, err := cityModel.FindBy(ctx, <span class="tok-str">"name"</span>, <span class="tok-str">"Portland"</span>)</code></pre>
+					</figure>
+				</section>
 				<section class="method">
 					<div class="method__head">
 						<p class="method__signature">Find<span class="punct">(ctx, id)</span></p>
@@ -370,7 +423,7 @@ users, err = userModel.Where(
 
 		<section class="topic" id="migrations">
 			<h3 class="divider divider--overflow-left">Migrations stay deliberate</h3>
-			<p><code>AutoMigrate(ctx)</code> is intentionally additive and safe: it creates tables, adds missing nullable columns, and creates tagged unique indexes, but never drops data, removes indexes, changes column types, or tightens existing constraints. Run it during application setup or deployment; normal model initialization and record operations do not require it.</p>
+			<p><code>AutoMigrate(ctx)</code> is intentionally additive and safe: it creates tables, adds missing nullable columns, and creates tagged unique and ordinary indexes, but never drops data, removes indexes, changes column types, or tightens existing constraints. It can add a foreign key with a newly added nullable column, but cannot attach one to an existing column. Run it during application setup or deployment; normal model initialization and record operations do not require it.</p>
 			<div class="table-scroll" role="region" aria-label="Data table" tabindex="0">
 			<table class="table">
 				<thead>
