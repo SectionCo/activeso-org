@@ -57,6 +57,36 @@
 		text-transform: uppercase;
 	}
 
+	/* ---------- Reading progress bar (pure CSS scroll-driven animation) ---------- */
+
+	.reading-progress {
+		position: fixed;
+		top: 0;
+		left: 0;
+		height: 3px;
+		width: 100%;
+		z-index: 50;
+		background-color: color-mix(in oklch, var(--color-accent) 88%, var(--color-primary));
+		transform-origin: 0 50%;
+		transform: scaleX(0);
+		animation: reading-progress-grow auto linear both;
+		animation-timeline: scroll(root);
+	}
+
+	@keyframes reading-progress-grow {
+		from { transform: scaleX(0); }
+		to { transform: scaleX(1); }
+	}
+
+	/* Browsers without scroll-driven animations keep a static hairline; hide it there. */
+	@supports not (animation-timeline: scroll(root)) {
+		.reading-progress { display: none; }
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.reading-progress { display: none; }
+	}
+
 	/* ---------- Header ---------- */
 
 	header {
@@ -318,6 +348,13 @@
 			letter-spacing: 0.1em;
 			text-transform: uppercase;
 			color: color-mix(in oklch, var(--color-primary) 68%, transparent);
+			/* The figure is the scroll container; pin the label bar while its code pans. */
+			position: sticky;
+			top: 0;
+			left: 0;
+			width: fit-content;
+			min-width: 100%;
+			background: color-mix(in oklch, var(--color-primary) 3%, var(--color-off-white));
 		}
 	}
 
@@ -423,6 +460,22 @@
 	}
 
 	/* ---------- Tables ---------- */
+
+	/* Scroll wrapper: a table wider than its container scrolls here instead of breaking the page. */
+	.table-scroll {
+		max-width: 100%;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		/* Let keyboard users reach and pan the region; focus ring matches the house buttons. */
+		&:focus-visible {
+			outline: 2px solid var(--color-accent--darker);
+			outline-offset: 1px;
+		}
+
+		.table {
+			min-width: min(100%, 40rem); /* keep wide tables wide so columns stay readable while scrolling */
+		}
+	}
 
 	.table {
 		width: 100%;
