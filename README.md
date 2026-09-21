@@ -50,8 +50,7 @@ caddy file-server --listen :8000
 GitHub Pages serves the site from `main` at the repository root.
 
 - Pushes to `main` are made through pull requests — direct pushes are rejected by repository rules.
-- The custom domain (`activeso.org`) is set in **Settings → Pages**, backed by the `CNAME` file at the repository root.
-- DNS: apex A records → `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`; `www` CNAME → `sectionco.github.io` (DNS only, not proxied).
+- The site deploys from `main` at the repository root via GitHub Pages.
 
 ## License
 
