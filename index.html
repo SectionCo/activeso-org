@@ -127,7 +127,8 @@
 
 	ID    <span class="tok-kw">string</span> <span class="tok-tag">`db:"id"`</span>
 	Email <span class="tok-kw">string</span> <span class="tok-tag">`db:"email" activeso:"not_null,unique"`</span>
-	Company <span class="tok-kw">string</span> <span class="tok-tag">`db:"company" activeso:"index,belongs_to=companies(id)"`</span>
+	Company <span class="tok-kw">string</span> <span class="tok-tag">`db:"company" activeso:"belongs_to=companies(id)"`</span>
+	City    <span class="tok-kw">string</span> <span class="tok-tag">`db:"city" activeso:"index"`</span>
 }</code></pre>
 				</figure>
 				<div class="mapping__arrow">maps to</div>
@@ -137,6 +138,7 @@
 id                   <span class="tok-kw">TEXT</span> <span class="tok-kw">PRIMARY KEY</span>,
 email                <span class="tok-kw">TEXT</span> <span class="tok-kw">NOT NULL</span>,
 company              <span class="tok-kw">TEXT</span> <span class="tok-kw">REFERENCES</span> companies(id),
+city                 <span class="tok-kw">TEXT</span>,
 activeso_created_at <span class="tok-kw">TEXT</span> <span class="tok-kw">NOT NULL DEFAULT CURRENT_TIMESTAMP</span>,
 activeso_updated_at <span class="tok-kw">TEXT</span> <span class="tok-kw">NOT NULL DEFAULT CURRENT_TIMESTAMP</span>
 );
@@ -144,8 +146,8 @@ activeso_updated_at <span class="tok-kw">TEXT</span> <span class="tok-kw">NOT NU
 <span class="tok-kw">CREATE UNIQUE INDEX</span> activeso_7573657273_656d61696c_unique
 	<span class="tok-kw">ON</span> users (email);
 
-<span class="tok-kw">CREATE INDEX</span> activeso_7573657273_636f6d70616e79_index
-	<span class="tok-kw">ON</span> users (company);</code></pre>
+<span class="tok-kw">CREATE INDEX</span> activeso_7573657273_63697479_index
+	<span class="tok-kw">ON</span> users (city);</code></pre>
 				</figure>
 			</div>
 			<div class="relationship-map" aria-label="User.Company maps to users.company, which references companies.id">
