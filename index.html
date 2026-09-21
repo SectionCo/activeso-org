@@ -304,6 +304,18 @@ user.Email = <span class="tok-str">"updated@null.live"</span>
 			<h3 class="divider divider--overflow-right">Querying, including vectors</h3>
 			<p>Every call below is actual API surface. <code>FindBy</code> provides a mapped-column equality lookup; parameterized <code>Where</code> chains with <code>OrderBy</code>, <code>Limit</code>, <code>First</code>, and <code>All</code>; and <code>Nearest</code> orders by cosine distance over a Turso <code>vector32</code> column.</p>
 			<div class="methods">
+				<section class="method">
+					<div class="method__head">
+						<p class="method__signature">Find<span class="punct">(ctx, id)</span></p>
+						<p class="method__desc">Loads the record with <code>id</code>; returns <code>activeso.ErrNotFound</code> when no record exists.</p>
+					</div>
+					<figure class="code">
+						<pre><code>user, err := userModel.Find(ctx, <span class="tok-str">"8b291a21-e69b-47ed-a3e0-f43e7609b26d"</span>)
+<span class="tok-kw">if</span> errors.Is(err, activeso.ErrNotFound) {
+	<span class="tok-com">// no row with that ID</span>
+}</code></pre>
+					</figure>
+				</section>
 				<section class="method" id="lookups">
 					<div class="method__head">
 						<p class="method__signature">FindBy<span class="punct">(ctx, column, value)</span></p>
@@ -318,18 +330,6 @@ user.Email = <span class="tok-str">"updated@null.live"</span>
 }
 
 cities, err := cityModel.FindBy(ctx, <span class="tok-str">"name"</span>, <span class="tok-str">"Portland"</span>)</code></pre>
-					</figure>
-				</section>
-				<section class="method">
-					<div class="method__head">
-						<p class="method__signature">Find<span class="punct">(ctx, id)</span></p>
-						<p class="method__desc">Loads the record with <code>id</code>; returns <code>activeso.ErrNotFound</code> when no record exists.</p>
-					</div>
-					<figure class="code">
-						<pre><code>user, err := userModel.Find(ctx, <span class="tok-str">"8b291a21-e69b-47ed-a3e0-f43e7609b26d"</span>)
-<span class="tok-kw">if</span> errors.Is(err, activeso.ErrNotFound) {
-	<span class="tok-com">// no row with that ID</span>
-}</code></pre>
 					</figure>
 				</section>
 				<section class="method">
