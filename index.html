@@ -75,7 +75,7 @@
 }
 
 <span class="tok-kw">func</span> example(ctx context.Context) <span class="tok-kw">error</span> {
-	<span class="tok-com">// Open a database/sql handle over a Turso connector.</span>
+	<span class="tok-com">// Create a Turso connector and open a database/sql handle over it.</span>
 	connector, err := turso.NewConnector(<span class="tok-str">"app.db"</span>)
 	<span class="tok-kw">if</span> err != <span class="tok-kw">nil</span> {
 		<span class="tok-kw">return</span> err
@@ -83,8 +83,10 @@
 	db := sql.OpenDB(connector)
 	<span class="tok-kw">defer</span> db.Close()
 
-	<span class="tok-com">// Initialize the model; create or update the schema.</span>
+	<span class="tok-com">// Initialize the User model.</span>
 	userModel := activeso.Model[User](db)
+
+	<span class="tok-com">// Optional: run during setup or deployment to create or update the schema.</span>
 	<span class="tok-kw">if</span> err := userModel.AutoMigrate(ctx); err != <span class="tok-kw">nil</span> {
 		<span class="tok-kw">return</span> err
 	}
@@ -125,14 +127,15 @@
 	email <span class="tok-kw">TEXT</span> <span class="tok-kw">NOT NULL</span>
 );
 
-<span class="tok-kw">CREATE UNIQUE INDEX</span> activeso_users_email_unique
+<span class="tok-kw">CREATE UNIQUE INDEX</span> activeso_7573657273_656d61696c_unique
 	<span class="tok-kw">ON</span> users (email);</code></pre>
 				</figure>
 			</div>
+			<p><code>db</code> tags choose column names; exported fields without one derive a snake_case name. Plain strings, numbers, and booleans read SQL <code>NULL</code> as their Go zero value, keeping rows readable after additive nullable migrations. Use <code>database/sql</code> nullable types, such as <code>sql.NullString</code>, when your application must distinguish <code>NULL</code> from an empty or zero value.</p>
 		</section>
 
 		<section class="topic" id="constraints">
-			<h3 class="divider divider--overflow-right">Two constraint options</h3>
+			<h3 class="divider divider--overflow-right">Three constraint options</h3>
 			<p>Constraints live in the struct tag. An unknown <code>activeso</code> constraint causes <code>activeso.Model[T](db)</code> to panic, so schema mistakes are caught during setup.</p>
 			<div class="table-scroll" role="region" aria-label="Data table" tabindex="0">
 			<table class="table">
@@ -150,9 +153,15 @@
 						<td>Creates a stable unique index named <code>activeso_&lt;table&gt;_&lt;column&gt;_unique</code>.</td>
 						<td><code>Create</code> and <code>Save</code> check for an existing value first and return an error matching <code>activeso.ErrUnique</code>; the Turso index remains the concurrency-safe authority.</td>
 					</tr>
+					<tr>
+						<td>primary_key</td>
+						<td>Declares the field as the table primary key.</td>
+						<td>Sets the identity used by <code>Find</code>, <code>Save</code>, and <code>Delete</code>.</td>
+					</tr>
 				</tbody>
 			</table>
 			</div>
+			<p>If no field has <code>primary_key</code>, ActiveSo uses the field mapped to <code>id</code>. Exactly one primary key is required. Supported types are strings, booleans, signed integers, <code>uint8</code>–<code>uint32</code>, and floats; <code>uint</code> and <code>uint64</code> are not supported because Turso stores integers as signed 64-bit values.</p>
 		</section>
 
 		<section class="topic" id="lifecycle">
@@ -186,6 +195,16 @@ err := user.Save(ctx)</code></pre>
 					</div>
 					<figure class="code">
 						<pre><code>err := user.Delete(ctx)</code></pre>
+					</figure>
+				</section>
+				<section class="method">
+					<div class="method__head">
+						<p class="method__signature">Bind<span class="punct">(value)</span></p>
+						<p class="method__desc">Attaches persistence behavior to an existing record pointer, such as one loaded outside ActiveSo.</p>
+					</div>
+					<figure class="code">
+						<pre><code>externalUser := &amp;User{ID: <span class="tok-str">"8b291a21-e69b-47ed-a3e0-f43e7609b26d"</span>, Email: <span class="tok-str">"hello@null.live"</span>}
+user, err := userModel.Bind(externalUser)</code></pre>
 					</figure>
 				</section>
 				<section class="method method--wide">
@@ -293,7 +312,7 @@ users, err = userModel.Where(
 
 		<section class="topic" id="migrations">
 			<h3 class="divider divider--overflow-left">Migrations stay deliberate</h3>
-			<p><code>AutoMigrate(ctx)</code> is intentionally additive and safe: it never drops data, removes indexes, changes column types, or tightens existing constraints. Destructive changes are separate operations you run during deployment.</p>
+			<p><code>AutoMigrate(ctx)</code> is intentionally additive and safe: it creates tables, adds missing nullable columns, and creates tagged unique indexes, but never drops data, removes indexes, changes column types, or tightens existing constraints. Run it during application setup or deployment; normal model initialization and record operations do not require it.</p>
 			<div class="table-scroll" role="region" aria-label="Data table" tabindex="0">
 			<table class="table">
 				<thead>
@@ -307,7 +326,7 @@ users, err = userModel.Where(
 				</tbody>
 			</table>
 			</div>
-			<p>Each column migration changes only its named target. Rebuilds run inside a transaction — unsupported dependencies cause an error, and failed migrations roll back.</p>
+			<p>Removing a struct field alone never drops a database column; use <code>DropColumn</code> explicitly. Each column migration changes only its named target. Rebuilds run inside a transaction — unsupported dependencies cause an error, and failed migrations roll back. Run destructive changes during a controlled deployment with a production backup; tables with dependent views, triggers, foreign keys, generated columns, or unsupported primary-key changes need a dedicated migration.</p>
 		</section>
 
 		<section class="topic" id="errors">
