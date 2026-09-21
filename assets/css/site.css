@@ -348,6 +348,13 @@
 			letter-spacing: 0.1em;
 			text-transform: uppercase;
 			color: color-mix(in oklch, var(--color-primary) 68%, transparent);
+			/* The figure is the scroll container; pin the label bar while its code pans. */
+			position: sticky;
+			top: 0;
+			left: 0;
+			width: fit-content;
+			min-width: 100%;
+			background: color-mix(in oklch, var(--color-primary) 3%, var(--color-off-white));
 		}
 	}
 
