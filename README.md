@@ -11,7 +11,6 @@ A static, single-page site. No build step, no framework, no remote dependencies.
 ```
 activeso-org/
 ├── index.html                     # the entire page — markup only
-├── CNAME                          # custom domain: activeso.org
 ├── assets/
 │   ├── css/
 │   │   ├── site.css               # all page styles (Section Co. design system)
