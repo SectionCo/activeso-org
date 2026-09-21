@@ -134,7 +134,7 @@
 		}
 	}
 
-	/* ---------- Headline (house pattern: noise-clipped Oswald + accent dot) ---------- */
+	/* ---------- Headline (house pattern: noise-clipped Oswald) ---------- */
 
 	#headline {
 		position: relative;
@@ -150,10 +150,10 @@
 		z-index: 2;
 	}
 
-	#headline-dot {
+	#headline-animation {
 		color: var(--color-accent);
 		display: inline-block;
-		animation: headline-dot-drop-in 1.4s cubic-bezier(0.45, 0, 0.55, 1) both;
+		animation: headline-animation-drop-in 1.4s cubic-bezier(0.45, 0, 0.55, 1) both;
 	}
 
 	@supports ((-webkit-background-clip: text) or (background-clip: text)) {
@@ -165,7 +165,7 @@
 		}
 	}
 
-	@keyframes headline-dot-drop-in {
+	@keyframes headline-animation-drop-in {
 		0%   { transform: translateY(-100vh) scale(1, 1); opacity: 0; }
 		3%   { opacity: 1; }
 		40%  { transform: translateY(0)     scale(1.6, 0.5); }
@@ -177,7 +177,7 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		#headline-dot { animation: none; }
+		#headline-animation { animation: none; }
 	}
 
 	/* ---------- Intro ---------- */
