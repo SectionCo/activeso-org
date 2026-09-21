@@ -186,7 +186,7 @@ fmt.Println(user.UpdatedAt)</code></pre>
 		</section>
 
 		<section class="topic" id="constraints">
-			<h3 class="divider divider--overflow-right">Five constraint options</h3>
+			<h3 class="divider divider--overflow-left">Five constraint options</h3>
 			<p>Constraints live in the struct tag. An unknown <code>activeso</code> constraint causes <code>activeso.Model[T](db)</code> to panic, so schema mistakes are caught during setup.</p>
 			<div class="table-scroll" role="region" aria-label="Data table" tabindex="0">
 			<table class="table">
@@ -226,7 +226,7 @@ fmt.Println(user.UpdatedAt)</code></pre>
 		</section>
 
 		<section class="topic" id="relationships">
-			<h3 class="divider divider--overflow-left">Relationships stay explicit</h3>
+			<h3 class="divider divider--overflow-right">Relationships stay explicit</h3>
 			<p>Use <code>belongs_to=table(column)</code> on the scalar foreign-key field. ActiveSo creates an inline <code>REFERENCES</code> constraint when it creates the table, while your model remains an ordinary Go struct.</p>
 			<figure class="code">
 				<figcaption><span>city.go</span><span>Go</span></figcaption>
