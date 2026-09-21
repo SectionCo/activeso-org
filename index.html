@@ -127,6 +127,7 @@
 
 	ID    <span class="tok-kw">string</span> <span class="tok-tag">`db:"id"`</span>
 	Email <span class="tok-kw">string</span> <span class="tok-tag">`db:"email" activeso:"not_null,unique"`</span>
+	City  <span class="tok-kw">string</span> <span class="tok-tag">`db:"city" activeso:"index"`</span>
 }</code></pre>
 				</figure>
 				<div class="mapping__arrow">maps to</div>
@@ -135,12 +136,16 @@
 					<pre><code><span class="tok-kw">CREATE TABLE</span> users (
 id                   <span class="tok-kw">TEXT</span> <span class="tok-kw">PRIMARY KEY</span>,
 email                <span class="tok-kw">TEXT</span> <span class="tok-kw">NOT NULL</span>,
+city                 <span class="tok-kw">TEXT</span>,
 activeso_created_at <span class="tok-kw">TEXT</span> <span class="tok-kw">NOT NULL DEFAULT CURRENT_TIMESTAMP</span>,
 activeso_updated_at <span class="tok-kw">TEXT</span> <span class="tok-kw">NOT NULL DEFAULT CURRENT_TIMESTAMP</span>
 );
 
 <span class="tok-kw">CREATE UNIQUE INDEX</span> activeso_7573657273_656d61696c_unique
-	<span class="tok-kw">ON</span> users (email);</code></pre>
+	<span class="tok-kw">ON</span> users (email);
+
+<span class="tok-kw">CREATE INDEX</span> activeso_7573657273_63697479_index
+	<span class="tok-kw">ON</span> users (city);</code></pre>
 				</figure>
 			</div>
 			<p><code>db</code> tags choose column names; exported fields without one derive a snake_case name. Plain strings, numbers, and booleans read SQL <code>NULL</code> as their Go zero value, keeping rows readable after additive nullable migrations. Use <code>database/sql</code> nullable types, such as <code>sql.NullString</code>, when your application must distinguish <code>NULL</code> from an empty or zero value.</p>
