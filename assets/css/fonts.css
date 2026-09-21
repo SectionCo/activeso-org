@@ -1,0 +1,17 @@
+/* Self-hosted fonts for ActiveSo.org — same family names section.co uses. */
+
+/* Google Sans Flex is the default text font for all Section Co.'s products. */
+@font-face {
+	font-family: "Google Sans Flex";
+	font-weight: 100 900;
+	src: url("/assets/fonts/GoogleSansFlex-subset.woff2") format("woff2");
+	font-display: block;
+}
+
+/* Oswald */
+@font-face {
+	font-family: "Oswald";
+	font-weight: 100 900;
+	src: url("/assets/fonts/Oswald-VariableFont_wght.ttf") format("truetype");
+	font-display: block;
+}
