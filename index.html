@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>ActiveSo — Active record for Turso</title>
+	<meta name="description" content="ActiveSo is a small active record-like persistence layer for Go structs, built on Turso.">
+	<meta property="og:title" content="ActiveSo">
+	<meta property="og:description" content="A small active record-like persistence layer for Go structs, built on Turso.">
+	<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2317130e'/%3E%3Ccircle cx='22' cy='22' r='5' fill='%23c96f4c'/%3E%3C/svg%3E">
+	<link rel="stylesheet" href="/assets/css/fonts.css">
+	<link rel="stylesheet" href="/assets/css/site.css">
+</head>
+<body>
+	<header>
+		<h1 id="headline">
+			ActiveSo<span id="headline-dot">.</span>
+		</h1>
+		<nav aria-label="Site sections">
+			<menu>
+				<li><a href="#quick-start"><span class="menu__icon">🚀</span>Quick start</a></li>
+				<li><a href="#mapping"><span class="menu__icon">🖇️</span>Mapping</a></li>
+				<li><a href="#constraints"><span class="menu__icon">🔒</span>Constraints</a></li>
+				<li><a href="#lifecycle"><span class="menu__icon">♻️</span>Lifecycle</a></li>
+				<li><a href="#querying"><span class="menu__icon">🔍</span>Querying</a></li>
+				<li><a href="#migrations"><span class="menu__icon">🏗️</span>Migrations</a></li>
+				<li><a href="#errors"><span class="menu__icon">⚠️</span>Errors</a></li>
+				<li><a href="#example"><span class="menu__icon">💯</span>Example</a></li>
+				<li><a href="https://github.com/SectionCo/activeso"><span class="menu__icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.02.16 1.83.08 2.12.51.53.82 1.25.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg> </span>GitHub</a></li>
+			</menu>
+		</nav>
+	</header>
+
+	<main>
+		<section id="hello">
+			ActiveSo is a small active record–like persistence layer for Go structs, built on Turso. Define a struct, get a table. Create, find, save, and delete directly on your Go values — explicit and lightweight, with no repository layer in between.
+		</section>
+
+		<div class="intro__meta">
+			<span>A <a href="https://section.co">Section Co.</a> project</span>
+			<span>·</span>
+			<span>MIT licensed</span>
+		</div>
+
+		<div class="intro__actions">
+			<a class="button" href="https://github.com/SectionCo/activeso">
+				View on GitHub
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
+			</a>
+			<span class="chip"><code>go get github.com/sectionco/activeso</code><button type="button" data-copy="go get github.com/sectionco/activeso" aria-label="Copy: go get github.com/sectionco/activeso">copy</button></span>
+			<span class="chip"><code>go -C example run .</code><button type="button" data-copy="go -C example run ." aria-label="Copy: go -C example run .">copy</button></span>
+		</div>
+
+		<h2 class="divider divider--overflow-right" id="quick-start">Quick start</h2>
+
+		<figure class="code">
+			<figcaption><span>main.go</span><span>from the README</span></figcaption>
+			<pre><code><span class="tok-kw">package</span> main
+
+<span class="tok-kw">import</span> (
+	<span class="tok-str">"context"</span>
+	<span class="tok-str">"database/sql"</span>
+
+	<span class="tok-str">"github.com/sectionco/activeso"</span>
+	turso <span class="tok-str">"turso.tech/database/tursogo"</span>
+)
+
+<span class="tok-kw">type</span> User <span class="tok-kw">struct</span> {
+	activeso.Record
+
+	ID        <span class="tok-kw">string</span>             <span class="tok-tag">`db:"id"`</span>
+	Email     <span class="tok-kw">string</span>             <span class="tok-tag">`db:"email" activeso:"not_null,unique"`</span>
+	Embedding activeso.Vector32 <span class="tok-tag">`db:"embedding"`</span>
+}
+
+<span class="tok-kw">func</span> example(ctx context.Context) <span class="tok-kw">error</span> {
+	<span class="tok-com">// Open a database/sql handle over a Turso connector.</span>
+	connector, err := turso.NewConnector(<span class="tok-str">"app.db"</span>)
+	<span class="tok-kw">if</span> err != <span class="tok-kw">nil</span> {
+		<span class="tok-kw">return</span> err
+	}
+	db := sql.OpenDB(connector)
+	<span class="tok-kw">defer</span> db.Close()
+
+	<span class="tok-com">// Initialize the model; create or update the schema.</span>
+	userModel := activeso.Model[User](db)
+	<span class="tok-kw">if</span> err := userModel.AutoMigrate(ctx); err != <span class="tok-kw">nil</span> {
+		<span class="tok-kw">return</span> err
+	}
+
+	<span class="tok-com">// Create, update, and delete — right on the value.</span>
+	user, err := userModel.Create(ctx, User{Email: <span class="tok-str">"hello@null.live"</span>})
+	<span class="tok-kw">if</span> err != <span class="tok-kw">nil</span> {
+		<span class="tok-kw">return</span> err
+	}
+
+	user.Email = <span class="tok-str">"updated@null.live"</span>
+	<span class="tok-kw">if</span> err := user.Save(ctx); err != <span class="tok-kw">nil</span> {
+		<span class="tok-kw">return</span> err
+	}
+
+	<span class="tok-kw">return</span> user.Delete(ctx)
+}</code></pre>
+		</figure>
+
+		<section class="topic" id="mapping">
+			<h3 class="divider divider--overflow-left">A struct maps to a table</h3>
+			<p>Model uses plural snake_case table names by default — <code>User</code> maps to <code>users</code>. The embedded <code>Record</code> holds ActiveSo's runtime persistence binding and is not a database column. The <code>activeso</code> tag adds constraints when <code>AutoMigrate(ctx)</code> runs.</p>
+			<div class="mapping">
+				<figure class="code">
+					<figcaption><span>User</span><span>Go</span></figcaption>
+					<pre><code><span class="tok-kw">type</span> User <span class="tok-kw">struct</span> {
+	activeso.Record
+
+	ID    <span class="tok-kw">string</span> <span class="tok-tag">`db:"id"`</span>
+	Email <span class="tok-kw">string</span> <span class="tok-tag">`db:"email" activeso:"not_null,unique"`</span>
+}</code></pre>
+				</figure>
+				<div class="mapping__arrow">maps to</div>
+				<figure class="code">
+					<figcaption><span>users</span><span>SQL</span></figcaption>
+					<pre><code><span class="tok-kw">CREATE TABLE</span> users (
+	id    <span class="tok-kw">TEXT</span> <span class="tok-kw">PRIMARY KEY</span>,
+	email <span class="tok-kw">TEXT</span> <span class="tok-kw">NOT NULL</span>
+);
+
+<span class="tok-kw">CREATE UNIQUE INDEX</span> activeso_users_email_unique
+	<span class="tok-kw">ON</span> users (email);</code></pre>
+				</figure>
+			</div>
+		</section>
+
+		<section class="topic" id="constraints">
+			<h3 class="divider divider--overflow-right">Two constraint options</h3>
+			<p>Constraints live in the struct tag. An unknown <code>activeso</code> constraint causes <code>activeso.Model[T](db)</code> to panic, so schema mistakes are caught during setup.</p>
+			<table class="table">
+				<thead>
+					<tr><th>Option</th><th>AutoMigrate(ctx) behavior</th><th>Write behavior</th></tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>not_null</td>
+						<td>Adds <code>NOT NULL</code> when creating a table. ActiveSo refuses to add a new required column to an existing table automatically.</td>
+						<td>Turso rejects <code>NULL</code> values.</td>
+					</tr>
+					<tr>
+						<td>unique</td>
+						<td>Creates a stable unique index named <code>activeso_&lt;table&gt;_&lt;column&gt;_unique</code>.</td>
+						<td><code>Create</code> and <code>Save</code> check for an existing value first and return an error matching <code>activeso.ErrUnique</code>; the Turso index remains the concurrency-safe authority.</td>
+					</tr>
+				</tbody>
+			</table>
+		</section>
+
+		<section class="topic" id="lifecycle">
+			<h3 class="divider divider--overflow-left">The record lifecycle</h3>
+			<p>Records returned by <code>Create</code>, <code>Find</code>, query methods, or <code>Bind</code> carry <code>Save(ctx)</code> and <code>Delete(ctx)</code> with them — persistence behavior travels on the value itself.</p>
+			<div class="methods">
+				<section class="method">
+					<div class="method__head">
+						<p class="method__signature">Create<span class="punct">(ctx, value)</span></p>
+						<p class="method__desc">Inserts <code>value</code>, generates an ID when its string ID field is empty, and returns the bound record.</p>
+					</div>
+					<figure class="code">
+						<pre><code>user, err := userModel.Create(ctx, User{Email: <span class="tok-str">"hello@null.live"</span>})
+<span class="tok-com">// user is bound: Save and Delete are available on it</span></code></pre>
+					</figure>
+				</section>
+				<section class="method">
+					<div class="method__head">
+						<p class="method__signature">Save<span class="punct">(ctx)</span></p>
+						<p class="method__desc">Updates all persisted fields except the primary key.</p>
+					</div>
+					<figure class="code">
+						<pre><code>user.Email = <span class="tok-str">"updated@null.live"</span>
+err := user.Save(ctx)</code></pre>
+					</figure>
+				</section>
+				<section class="method">
+					<div class="method__head">
+						<p class="method__signature">Delete<span class="punct">(ctx)</span></p>
+						<p class="method__desc">Deletes a bound record by primary key.</p>
+					</div>
+					<figure class="code">
+						<pre><code>err := user.Delete(ctx)</code></pre>
+					</figure>
+				</section>
+				<section class="method method--wide">
+					<div class="method__head">
+						<p class="method__signature">Full lifecycle</p>
+						<p class="method__desc">Create, mutate and save, delete — one bound <code>*T</code> from start to finish.</p>
+					</div>
+					<figure class="code">
+						<pre><code>user, err := userModel.Create(ctx, User{Email: <span class="tok-str">"hello@null.live"</span>})
+<span class="tok-kw">if</span> err != <span class="tok-kw">nil</span> {
+	<span class="tok-kw">return</span> err
+}
+
+user.Email = <span class="tok-str">"updated@null.live"</span>
+<span class="tok-kw">if</span> err := user.Save(ctx); err != <span class="tok-kw">nil</span> {
+	<span class="tok-kw">return</span> err
+}
+
+<span class="tok-kw">return</span> user.Delete(ctx)</code></pre>
+					</figure>
+				</section>
+			</div>
+			<p>A record loaded outside ActiveSo must be attached first with <code>Bind(value)</code>; an unbound record's <code>Save</code> and <code>Delete</code> return <code>activeso.ErrUnboundRecord</code>. A bound record's ID is captured when it becomes bound and cannot be changed — modifying it makes <code>Save</code> and <code>Delete</code> return <code>activeso.ErrIDChanged</code>; create a new record when you need a new identity.</p>
+		</section><section class="topic" id="querying">
+			<h3 class="divider divider--overflow-right">Querying, including vectors</h3>
+			<p>Every call below is real API surface — parameterized <code>Where</code> chains with <code>OrderBy</code>, <code>Limit</code>, <code>First</code>, and <code>All</code>, and <code>Nearest</code> orders by cosine distance over a Turso <code>vector32</code> column.</p>
+			<div class="methods">
+				<section class="method">
+					<div class="method__head">
+						<p class="method__signature">Find<span class="punct">(ctx, id)</span></p>
+						<p class="method__desc">Loads the record with <code>id</code>; returns <code>activeso.ErrNotFound</code> when no record exists.</p>
+					</div>
+					<figure class="code">
+						<pre><code>user, err := userModel.Find(ctx, <span class="tok-str">"8b291a21-e69b-47ed-a3e0-f43e7609b26d"</span>)
+<span class="tok-kw">if</span> errors.Is(err, activeso.ErrNotFound) {
+	<span class="tok-com">// no row with that ID</span>
+}</code></pre>
+					</figure>
+				</section>
+				<section class="method">
+					<div class="method__head">
+						<p class="method__signature">All<span class="punct">(ctx)</span></p>
+						<p class="method__desc">Loads every record from the model's table.</p>
+					</div>
+					<figure class="code">
+						<pre><code>users, err := userModel.All(ctx)
+<span class="tok-kw">for</span> _, user := <span class="tok-kw">range</span> users {
+	fmt.Println(user.Email)
+}</code></pre>
+					</figure>
+				</section>
+				<section class="method">
+					<div class="method__head">
+						<p class="method__signature">Where<span class="punct">(predicate, arguments...)</span></p>
+						<p class="method__desc">Starts a parameterized query — one argument for each <code>?</code> placeholder.</p>
+					</div>
+					<figure class="code">
+						<pre><code>user, err := userModel.Where(<span class="tok-str">"email = ?"</span>, <span class="tok-str">"hello@null.live"</span>).First(ctx)</code></pre>
+					</figure>
+				</section>
+				<section class="method">
+					<div class="method__head">
+						<p class="method__signature">First<span class="punct">(ctx)</span></p>
+						<p class="method__desc">Loads the first matching result; <code>activeso.ErrNotFound</code> when none match.</p>
+					</div>
+					<figure class="code">
+						<pre><code>user, err := userModel.Where(<span class="tok-str">"email LIKE ?"</span>, <span class="tok-str">"%@null.live"</span>).
+	OrderBy(<span class="tok-str">"email ASC"</span>).
+	First(ctx)</code></pre>
+					</figure>
+				</section>
+				<section class="method method--wide">
+					<div class="method__head">
+						<p class="method__signature">Where + OrderBy + Limit + All<span class="punct">(ctx)</span></p>
+						<p class="method__desc">Query parts compose. <code>OrderBy</code> takes a raw SQL expression; <code>Limit</code> takes a positive maximum row count; terminators return bound records.</p>
+					</div>
+					<figure class="code">
+						<pre><code>excludedID := <span class="tok-str">"8b291a21-e69b-47ed-a3e0-f43e7609b26d"</span>
+users, err := userModel.Where(<span class="tok-str">"email LIKE ? AND id &lt;&gt; ?"</span>, <span class="tok-str">"%@null.live"</span>, excludedID).
+	OrderBy(<span class="tok-str">"email ASC"</span>).
+	Limit(10).
+	All(ctx)</code></pre>
+					</figure>
+				</section>
+				<section class="method method--wide">
+					<div class="method__head">
+						<p class="method__signature">Nearest<span class="punct">(column, embedding)</span></p>
+						<p class="method__desc">Orders records by cosine distance from a <code>Vector32</code> in a Turso <code>vector32</code> column — lower distance is more similar. Vectors can also ride along in <code>Where</code> when the predicate calls <code>vector32(?)</code>.</p>
+					</div>
+					<figure class="code">
+						<pre><code>queryEmbedding := activeso.Vector32{<span class="tok-str">0.12</span>, <span class="tok-str">-0.08</span>, <span class="tok-str">0.63</span>}
+
+users, err := userModel.Nearest(<span class="tok-str">"embedding"</span>, queryEmbedding).Limit(10).All(ctx)
+
+users, err = userModel.Where(
+	<span class="tok-str">"vector_distance_cos(embedding, vector32(?)) &lt; ?"</span>,
+	queryEmbedding,
+	<span class="tok-str">0.2</span>,
+).All(ctx)</code></pre>
+					</figure>
+				</section>
+			</div>
+			<p><code>OrderBy(expression)</code> called after <code>Nearest</code> replaces the vector-distance ordering and discards that ordering's embedding argument.</p>
+		</section>
+
+		<section class="topic" id="migrations">
+			<h3 class="divider divider--overflow-left">Migrations stay deliberate</h3>
+			<p><code>AutoMigrate(ctx)</code> is intentionally additive and safe: it never drops data, removes indexes, changes column types, or tightens existing constraints. Destructive changes are separate operations you run during deployment.</p>
+			<table class="table">
+				<thead>
+					<tr><th>Operation</th><th>Required model change</th><th>Effect</th></tr>
+				</thead>
+				<tbody>
+					<tr><td>DropUnique(ctx, column)</td><td>Remove <code>unique</code> from the column's <code>activeso</code> tag.</td><td>Drops ActiveSo's named unique index.</td></tr>
+					<tr><td>DropColumn(ctx, column)</td><td>Remove the field from the model.</td><td>Rebuilds the table without the column.</td></tr>
+					<tr><td>ChangeColumnType(ctx, column)</td><td>Change the Go field's type.</td><td>Rebuilds the table using the newly inferred Turso column type.</td></tr>
+					<tr><td>SetNotNull(ctx, column)</td><td>Add <code>not_null</code> to the field's <code>activeso</code> tag.</td><td>Rebuilds the table with <code>NOT NULL</code>; it fails if any existing row contains <code>NULL</code>.</td></tr>
+				</tbody>
+			</table>
+			<p>Each column migration changes only its named target. Rebuilds run inside a transaction — unsupported dependencies cause an error, and failed migrations roll back.</p>
+		</section>
+
+		<section class="topic" id="errors">
+			<h3 class="divider divider--overflow-right">Four sentinel errors</h3>
+			<p>Match with <code>errors.Is</code>. Unique conflicts come back as a <code>UniqueError</code> that carries the offending field — <code>activeso: email must be unique</code>.</p>
+			<ul class="errors">
+				<li><code>ErrNotFound</code><span>A query did not return a matching record.</span></li>
+				<li><code>ErrUnboundRecord</code><span>A record was not created, loaded, or bound through a Model.</span></li>
+				<li><code>ErrIDChanged</code><span>A bound record's primary key was modified.</span></li>
+				<li><code>ErrUnique</code><span>A value conflicts with a field marked <code>activeso:"unique"</code>.</span></li>
+			</ul>
+		</section>
+
+		<section class="topic" id="example">
+			<h3 class="divider divider--overflow-left">A working Echo v5 example</h3>
+			<p>The repository ships a small Echo v5 server with a single page for creating, editing, and deleting users. It creates a local <code>activeso-example.db</code> and listens on <code>localhost:8080</code>.</p>
+			<div class="intro__actions">
+				<span class="chip"><code>go -C example run .</code><button type="button" data-copy="go -C example run ." aria-label="Copy: go -C example run .">copy</button></span>
+			</div>
+			<table class="table">
+				<thead>
+					<tr><th>Method</th><th>Path</th><th>Behavior</th></tr>
+				</thead>
+				<tbody>
+					<tr><td>GET</td><td><code>/</code></td><td>Renders the create form and existing users.</td></tr>
+					<tr><td>POST</td><td><code>/users</code></td><td>Creates a user from an email address.</td></tr>
+					<tr><td>POST</td><td><code>/users/:id</code></td><td>Updates a user's email address.</td></tr>
+					<tr><td>POST</td><td><code>/users/:id/delete</code></td><td>Deletes a user.</td></tr>
+				</tbody>
+			</table>
+		</section>
+	</main>
+
+	<footer>
+		<p class="footer__love">
+			Made with
+			<span class="heart"><svg title="heart" role="img" aria-label="heart" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" /></svg></span>
+			in Colorado
+		</p>
+		<p class="footer__copyright">© <a href="https://section.co">Section Co.</a> · ActiveSo is MIT licensed.</p>
+		<nav class="footer__links" aria-label="Project links">
+			<a href="https://github.com/SectionCo/activeso">github.com/SectionCo/activeso</a>
+			<a href="https://github.com/SectionCo/activeso/blob/main/README.md">README</a>
+			<a href="https://docs.turso.tech/">Turso docs</a>
+		</nav>
+	</footer>
+
+	<script src="/assets/js/copy-buttons.js" defer></script>
+</body>
+</html>
