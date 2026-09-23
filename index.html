@@ -43,7 +43,7 @@
 		<div class="intro__meta">
 			<span>A <a href="https://section.co">Section Co.</a> project</span>
 			<span>·</span>
-			<span><a href="https://github.com/SectionCo/activeso/releases/tag/v1.0.2">v1.0.2</a></span>
+			<span><a href="https://github.com/SectionCo/activeso/releases/tag/v1.0.3">v1.0.3</a></span>
 			<span>·</span>
 			<span><a href="https://github.com/SectionCo/activeso/blob/main/LICENSE">MIT licensed</a></span>
 		</div>
@@ -118,7 +118,7 @@
 
 		<section class="topic" id="mapping">
 			<h3 class="divider divider--overflow-left">A struct maps to a table</h3>
-			<p>Model uses plural snake_case table names by default — <code>User</code> maps to <code>users</code>. The embedded <code>Record</code> holds ActiveSo's runtime persistence binding and is not a database column. The <code>activeso</code> tag adds constraints when <code>AutoMigrate(ctx)</code> runs.</p>
+			<p>Model uses plural snake_case table names by default — English inflection handles common and irregular forms, so <code>User</code> maps to <code>users</code>, <code>City</code> to <code>cities</code>, and <code>Person</code> to <code>people</code>. A type already named <code>Users</code> is not double-pluralized. Implement <code>TableName() string</code> when your database uses a specific or domain-specific name. The embedded <code>Record</code> holds ActiveSo's runtime persistence binding and is not a database column. The <code>activeso</code> tag adds constraints when <code>AutoMigrate(ctx)</code> runs.</p>
 			<div class="mapping">
 				<figure class="code">
 					<figcaption><span>User</span><span>Go</span></figcaption>
@@ -186,8 +186,8 @@ fmt.Println(user.UpdatedAt)</code></pre>
 		</section>
 
 		<section class="topic" id="constraints">
-			<h3 class="divider divider--overflow-left">Five constraint options</h3>
-			<p>Constraints live in the struct tag. An unknown <code>activeso</code> constraint causes <code>activeso.Model[T](db)</code> to panic, so schema mistakes are caught during setup.</p>
+			<h3 class="divider divider--overflow-left">Six constraint options</h3>
+			<p>Constraints live in the struct tag. An unknown or malformed <code>activeso</code> constraint causes <code>activeso.Model[T](db)</code> to panic, so schema mistakes are caught during setup.</p>
 			<div class="table-scroll" role="region" aria-label="Data table" tabindex="0">
 			<table class="table">
 				<thead>
@@ -203,6 +203,11 @@ fmt.Println(user.UpdatedAt)</code></pre>
 						<td>unique</td>
 						<td>Creates a stable unique index named <code>activeso_&lt;table&gt;_&lt;column&gt;_unique</code>.</td>
 						<td><code>Create</code> and <code>Save</code> check for an existing value first and return an error matching <code>activeso.ErrUnique</code>; the Turso index remains the concurrency-safe authority.</td>
+					</tr>
+					<tr>
+						<td><code>unique_with=columnA+columnB+...</code></td>
+						<td>Creates a stable composite unique index beginning with the field carrying the tag, followed by the <code>+</code>-separated mapped columns in the order written. Do not repeat the tagged field in the list.</td>
+						<td>Turso rejects duplicate combinations with an error matching <code>activeso.ErrUnique</code>.</td>
 					</tr>
 					<tr>
 						<td>index</td>
@@ -438,13 +443,14 @@ users, err = userModel.Where(
 				</thead>
 				<tbody>
 					<tr><td>DropUnique(ctx, column)</td><td>Remove <code>unique</code> from the column's <code>activeso</code> tag.</td><td>Drops ActiveSo's named unique index.</td></tr>
+					<tr><td>DropUniqueWith(ctx, columns...)</td><td>Remove <code>unique_with</code> from the tagged field.</td><td>Drops ActiveSo's named composite unique index; pass its columns in the original order.</td></tr>
 					<tr><td>DropColumn(ctx, column)</td><td>Remove the field from the model.</td><td>Rebuilds the table without the column.</td></tr>
 					<tr><td>ChangeColumnType(ctx, column)</td><td>Change the Go field's type.</td><td>Rebuilds the table using the newly inferred Turso column type.</td></tr>
 					<tr><td>SetNotNull(ctx, column)</td><td>Add <code>not_null</code> to the field's <code>activeso</code> tag.</td><td>Rebuilds the table with <code>NOT NULL</code>; it fails if any existing row contains <code>NULL</code>.</td></tr>
 				</tbody>
 			</table>
 			</div>
-			<p>Removing a struct field alone never drops a database column; use <code>DropColumn</code> explicitly. Each column migration changes only its named target. Rebuilds run inside a transaction — unsupported dependencies cause an error, and failed migrations roll back. Run destructive changes during a controlled deployment with a production backup; tables with dependent views, triggers, foreign keys, generated columns, or unsupported primary-key changes need a dedicated migration.</p>
+			<p>Removing a <code>unique_with</code> tag is also deliberate: <code>AutoMigrate(ctx)</code> rejects the implicit removal and points to <code>DropUniqueWith(ctx, columns...)</code>. Removing a struct field alone never drops a database column; use <code>DropColumn</code> explicitly. Each column migration changes only its named target. Rebuilds run inside a transaction — unsupported dependencies cause an error, and failed migrations roll back. Run destructive changes during a controlled deployment with a production backup; tables with dependent views, triggers, foreign keys, generated columns, or unsupported primary-key changes need a dedicated migration.</p>
 		</section>
 
 		<section class="topic" id="errors">
@@ -454,7 +460,7 @@ users, err = userModel.Where(
 				<li><code>ErrNotFound</code><span>A query did not return a matching record.</span></li>
 				<li><code>ErrUnboundRecord</code><span>A record was not created, loaded, or bound through a Model.</span></li>
 				<li><code>ErrIDChanged</code><span>A bound record's primary key was modified.</span></li>
-				<li><code>ErrUnique</code><span>A value conflicts with a field marked <code>activeso:"unique"</code>.</span></li>
+				<li><code>ErrUnique</code><span>A value conflicts with a <code>unique</code> field or <code>unique_with</code> combination.</span></li>
 			</ul>
 		</section>
 
