@@ -43,7 +43,7 @@
 		<div class="intro__meta">
 			<span>A <a href="https://section.co">Section Co.</a> project</span>
 			<span>·</span>
-			<span><a href="https://github.com/SectionCo/activeso/releases/tag/v1.0.3">v1.0.3</a></span>
+			<span><a href="https://github.com/SectionCo/activeso/releases/tag/v1.0.4">v1.0.4</a></span>
 			<span>·</span>
 			<span><a href="https://github.com/SectionCo/activeso/blob/main/LICENSE">MIT licensed</a></span>
 		</div>
@@ -186,7 +186,7 @@ fmt.Println(user.UpdatedAt)</code></pre>
 		</section>
 
 		<section class="topic" id="constraints">
-			<h3 class="divider divider--overflow-left">Six constraint options</h3>
+			<h3 class="divider divider--overflow-left">Seven constraint options</h3>
 			<p>Constraints live in the struct tag. An unknown or malformed <code>activeso</code> constraint causes <code>activeso.Model[T](db)</code> to panic, so schema mistakes are caught during setup.</p>
 			<div class="table-scroll" role="region" aria-label="Data table" tabindex="0">
 			<table class="table">
@@ -224,6 +224,11 @@ fmt.Println(user.UpdatedAt)</code></pre>
 						<td>Adds <code>REFERENCES table(column)</code> when creating a table or adding a missing nullable column.</td>
 						<td>With foreign-key enforcement enabled, Turso rejects non-<code>NULL</code> values missing from the referenced column.</td>
 					</tr>
+					<tr>
+						<td>on_delete=cascade</td>
+						<td>Adds <code>ON DELETE CASCADE</code> to a <code>belongs_to</code> foreign key on the same field when creating a table or adding a missing nullable column. Requires <code>belongs_to</code>.</td>
+						<td>With foreign-key enforcement enabled, deleting a referenced row also deletes its matching child rows.</td>
+					</tr>
 				</tbody>
 			</table>
 			</div>
@@ -232,7 +237,7 @@ fmt.Println(user.UpdatedAt)</code></pre>
 
 		<section class="topic" id="relationships">
 			<h3 class="divider divider--overflow-right">Relationships stay explicit</h3>
-			<p>Use <code>belongs_to=table(column)</code> on the scalar foreign-key field. ActiveSo creates an inline <code>REFERENCES</code> constraint when it creates the table, while your model remains an ordinary Go struct.</p>
+			<p>Use <code>belongs_to=table(column)</code> on the scalar foreign-key field. ActiveSo creates an inline <code>REFERENCES</code> constraint when it creates the table, while your model remains an ordinary Go struct. Add <code>on_delete=cascade</code> on the same field when deleting a parent should also delete its child rows.</p>
 			<figure class="code">
 				<figcaption><span>city.go</span><span>Go</span></figcaption>
 				<pre><code><span class="tok-kw">type</span> City <span class="tok-kw">struct</span> {
@@ -240,10 +245,10 @@ fmt.Println(user.UpdatedAt)</code></pre>
 
 	ID       <span class="tok-kw">string</span> <span class="tok-tag">`db:"id"`</span>
 	Name     <span class="tok-kw">string</span> <span class="tok-tag">`db:"name"`</span>
-	RegionID <span class="tok-kw">string</span> <span class="tok-tag">`db:"region_id" activeso:"not_null,belongs_to=regions(id)"`</span>
+	RegionID <span class="tok-kw">string</span> <span class="tok-tag">`db:"region_id" activeso:"not_null,belongs_to=regions(id),on_delete=cascade"`</span>
 }</code></pre>
 			</figure>
-			<p>Enable <code>PRAGMA foreign_keys = ON</code> before using models with <code>belongs_to</code>. SQLite-compatible enforcement is connection-specific, so applications using a connection pool must configure every connection. <code>AutoMigrate(ctx)</code> cannot attach a foreign key to an existing column; use a dedicated migration for that schema change.</p>
+			<p>Enable <code>PRAGMA foreign_keys = ON</code> before using models with <code>belongs_to</code>. SQLite-compatible enforcement is connection-specific, so applications using a connection pool must configure every connection. Without <code>on_delete=cascade</code>, the foreign key keeps its default delete behavior. <code>AutoMigrate(ctx)</code> cannot attach a foreign key to an existing column or change an existing foreign key to cascade; use a dedicated migration for either schema change.</p>
 		</section>
 
 		<section class="topic" id="lifecycle">
