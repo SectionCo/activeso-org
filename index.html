@@ -43,7 +43,7 @@
 		<div class="intro__meta">
 			<span>A <a href="https://section.co">Section Co.</a> project</span>
 			<span>·</span>
-			<span><a href="https://github.com/SectionCo/activeso/releases/tag/v1.0.4">v1.0.4</a></span>
+			<span><a href="https://github.com/SectionCo/activeso/releases/tag/v1.0.5">v1.0.5</a></span>
 			<span>·</span>
 			<span><a href="https://github.com/SectionCo/activeso/blob/main/LICENSE">MIT licensed</a></span>
 		</div>
@@ -182,7 +182,9 @@ fmt.Println(user.UpdatedAt)</code></pre>
 					</figure>
 				</section>
 			</div>
-			<p>New tables use <code>CURRENT_TIMESTAMP</code> defaults. ActiveSo installs triggers that backfill legacy tables, update <code>activeso_updated_at</code> whenever data changes—even through direct SQL—and protect the managed values from arbitrary replacement. <code>Bind(value)</code> attaches persistence behavior but does not load timestamps; a later successful <code>Save(ctx)</code> refreshes them.</p>
+			<p>New tables use <code>CURRENT_TIMESTAMP</code> defaults. ActiveSo backfills legacy tables and installs an insert trigger to fill omitted or NULL timestamps. An update trigger refreshes <code></code>activeso_updated_at</code> on writes naming non-timestamp columns—even no-op direct SQL assignments—unless the statement supplies an update timestamp different from the row’s old value. <code>Bind(value)</code></code> attaches persistence behavior but does not load timestamps; a later successful <code>Save(ctx)</code> refreshes them.</p>
+			<p></p>Direct SQL may replace either timestamp. Changed supplied update timestamps are preserved for row-image replay; equal supplied timestamps still refresh on data-column writes, while timestamp-only updates do not invoke the refresh trigger. This is a value-based policy, not replay detection or SQL-level timestamp protection. Ordinary ActiveSo writes leave creation time unchanged and manage update time automatically; <code>Create</code> and <code></code>Save</code> do not persist assignments to the Go timestamp fields. SQL callers must supply valid UTC timestamp text, such as <code>YYYY-MM-DD HH</code>:MM:SS</code> or RFC3339.</p>
+			<p><b></b>Upgrading to v1.0.5:</b> Run <code>Auto</code>Migrate(ctx)</code> for each model to remove the old timestamp rejection guards and replace the update trigger. Updating the package alone does not change existing database triggers. Apply the migration to every database that may execute replayed writes, and validate remote Push/Pull behavior with your sync setup.</p>
 		</section>
 
 		<section class="topic" id="constraints">
