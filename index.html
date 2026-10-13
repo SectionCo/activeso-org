@@ -44,7 +44,7 @@
 		<div class="intro__meta">
 			<span>A <a href="https://section.co">Section Co.</a> project</span>
 			<span>·</span>
-			<span><a href="https://github.com/SectionCo/activeso/releases/tag/v2.0.0">v2.0.0</a></span>
+			<span><a href="https://github.com/SectionCo/activeso/releases/tag/v2.0.1">v2.0.1</a></span>
 			<span>·</span>
 			<span><a href="https://github.com/SectionCo/activeso/blob/main/LICENSE">MIT licensed</a></span>
 		</div>
@@ -81,7 +81,7 @@
 <span class="tok-kw">func</span> example(ctx context.Context) <span class="tok-kw">error</span> {
 	sync, err := activeso.OpenSync(ctx, activeso.SyncConfig{
 		Path:      <span class="tok-str">"app.db"</span>,
-		RemoteURL: <span class="tok-str">"turso://my-db-org.turso.io"</span>,
+		RemoteURL: <span class="tok-str">"turso://my-db-my-org.aws-us-east-1.turso.io"</span>,
 		AuthToken: os.Getenv(<span class="tok-str">"TURSO_AUTH_TOKEN"</span>),
 	})
 	<span class="tok-kw">if</span> err != <span class="tok-kw">nil</span> {
@@ -551,7 +551,7 @@ users, err = userModel.Where(
 			<p>The repository ships a small Echo v5 server with a single page for creating, finding, editing, and deleting users. It syncs a local <code>activeso-example.db</code> with a Turso Cloud database you own, syncs after each write, and shows any sync failure on the page — it never retries on its own. It listens on <code>localhost:8080</code>.</p>
 			<figure class="code">
 				<figcaption><span>shell</span><span>from the repository root</span></figcaption>
-				<pre><code>TURSO_DATABASE_URL=turso://my-db-org.turso.io TURSO_AUTH_TOKEN=... go -C example run .</code></pre>
+				<pre><code>TURSO_DATABASE_URL=turso://my-db-my-org.aws-us-east-1.turso.io TURSO_AUTH_TOKEN=... go -C example run .</code></pre>
 			</figure>
 			<div class="table-scroll" role="region" aria-label="Data table" tabindex="0">
 			<table class="table">
@@ -560,7 +560,7 @@ users, err = userModel.Where(
 				</thead>
 				<tbody>
 					<tr><td>GET</td><td><code>/</code></td><td>Renders the create form, find form, and existing users.</td></tr>
-					<tr><td>GET</td><td><code>/users/find</code></td><td>Finds a user by ID from the <code>id</code> query parameter.</td></tr>
+					<tr><td>GET</td><td><code>/users/find</code></td><td>Finds a user by email address from the <code>email</code> query parameter with <code>FindBy</code>, an exact match after trimming surrounding whitespace.</td></tr>
 					<tr><td>POST</td><td><code>/users</code></td><td>Creates a user from an email address.</td></tr>
 					<tr><td>POST</td><td><code>/users/batch</code></td><td>Creates one user per line in a single transaction; if any fails, none are saved.</td></tr>
 					<tr><td>POST</td><td><code>/sync</code></td><td>Pulls remote changes and pushes local ones.</td></tr>
