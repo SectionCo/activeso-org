@@ -29,7 +29,7 @@ Use tabs for indentation in all HTML, CSS, and any scripts. Do not use spaces fo
 
 ## Deployment
 
-The site publishes through GitHub Pages. Changes to `main` are made through pull requests — direct pushes to `main` are rejected by repository rules. The working branch for site changes is `site`; merge to `main` via PR, with Pages configured to deploy from `main` / root.
+The site publishes through GitHub Pages, deployed from `main` / root. You cannot push directly to `main` — repository rules reject it. Make changes on a branch and merge to `main` via pull request.
 
 ## Human approval requirement
 
