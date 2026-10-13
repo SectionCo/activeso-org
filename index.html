@@ -65,7 +65,6 @@
 
 <span class="tok-kw">import</span> (
 	<span class="tok-str">"context"</span>
-	<span class="tok-str">"fmt"</span>
 	<span class="tok-str">"os"</span>
 
 	<span class="tok-str">"github.com/sectionco/activeso/v2"</span>
@@ -260,7 +259,7 @@ fmt.Println(user.UpdatedAt)</code></pre>
 	RegionID <span class="tok-kw">string</span> <span class="tok-tag">`db:"region_id" activeso:"not_null,belongs_to=regions(id),on_delete=cascade"`</span>
 }</code></pre>
 			</figure>
-			<p><b>Foreign keys are enforced on every ActiveSo write.</b> <code>Create</code>, <code>Save</code>, and <code>Delete</code> turn on <code>PRAGMA foreign_keys</code> for the exact pooled connection that runs the write, so a model cannot persist orphaned rows or delete a referenced parent. Your own direct SQL on <code>sync.DB()</code> is not covered, and SQLite ignores the pragma once a transaction has begun — take one connection, enable the pragma on it, and run statements or begin transactions there.</p>
+			<p><b>Foreign keys are enforced on every ActiveSo write outside a transaction.</b> <code>Create</code>, <code>Save</code>, and <code>Delete</code> turn on <code>PRAGMA foreign_keys</code> for the exact pooled connection that runs the write, so a model cannot persist orphaned rows or delete a referenced parent. Your own direct SQL on <code>sync.DB()</code> is not covered. Writes on a <code>*sql.Tx</code> run as-is, because SQLite ignores the pragma once a transaction has begun, so a transaction from <code>sync.DB().BeginTx</code> does not enforce foreign keys. Take one connection, enable the pragma on it, and run statements or begin transactions there.</p>
 			<figure class="code">
 				<pre><code>conn, err := sync.DB().Conn(ctx)
 <span class="tok-kw">if</span> err != <span class="tok-kw">nil</span> {
@@ -370,6 +369,7 @@ matches, err := txUsers.Where(<span class="tok-str">"email LIKE ?"</span>, <span
 					</figure>
 				</section>
 			</div>
+			<p><b>Foreign keys inside a transaction depend on its connection.</b> SQLite ignores <code>PRAGMA foreign_keys</code> after a transaction begins, so a <code>*sql.Tx</code> from <code>db.BeginTx</code> can commit orphaned rows. For models with <code>belongs_to</code>, take a connection, enable the pragma, and begin the transaction on it — see <a href="#hints">Hints</a>.</p>
 			<p>A <code>*sql.Tx</code> or <code>*sql.Conn</code> you pass must belong to the model's database; ActiveSo cannot check this. Records from a <code>Using</code> view fail with <code>sql.ErrTxDone</code> once the transaction ends, and <code>Using(tx).Bind(record)</code> moves an existing record into one. Turso begins transactions with snapshot isolation and ignores <code>sql.TxOptions</code>. With <code>db.SetMaxOpenConns(1)</code>, an open transaction holds the only connection, so root-model calls wait until it ends — use <code>Using(tx)</code> or the <code>Tx</code> methods inside.</p>
 		</section>
 
