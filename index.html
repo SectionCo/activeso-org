@@ -4,9 +4,9 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>ActiveSo — Active record for Turso</title>
-	<meta name="description" content="ActiveSo is a small active record-like persistence layer for Go structs, built on Turso.">
+	<meta name="description" content="ActiveSo is a small active record-like persistence layer for Go structs, backed by Turso. You own the schema; ActiveSo writes the SQL and checks your tables match.">
 	<meta property="og:title" content="ActiveSo">
-	<meta property="og:description" content="A small active record-like persistence layer for Go structs, built on Turso.">
+	<meta property="og:description" content="A small active record-like persistence layer for Go structs, backed by Turso.">
 	<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2317130e'/%3E%3Ccircle cx='22' cy='22' r='5' fill='%23c96f4c'/%3E%3C/svg%3E">
 	<link rel="stylesheet" href="/assets/css/fonts.css">
 	<link rel="stylesheet" href="/assets/css/site.css">
@@ -20,15 +20,16 @@
 		<nav aria-label="Site sections">
 			<menu>
 				<li><a href="#quick-start"><span class="menu__icon">🚀</span>Quick start</a></li>
-				<li><a href="#mapping"><span class="menu__icon">🖇️</span>Mapping</a></li>
+				<li><a href="#sync"><span class="menu__icon">☁️</span>Sync</a></li>
+				<li><a href="#schema"><span class="menu__icon">🖇️</span>Your schema</a></li>
 				<li><a href="#timestamps"><span class="menu__icon">🕒</span>Timestamps</a></li>
-				<li><a href="#constraints"><span class="menu__icon">🔒</span>Constraints</a></li>
-				<li><a href="#relationships"><span class="menu__icon">🔗</span>Relationships</a></li>
+				<li><a href="#hints"><span class="menu__icon">🔒</span>Hints</a></li>
+				<li><a href="#verify"><span class="menu__icon">✅</span>Verify</a></li>
+				<li><a href="#transactions"><span class="menu__icon">🔁</span>Transactions</a></li>
 				<li><a href="#lifecycle"><span class="menu__icon">♻️</span>Lifecycle</a></li>
-				<li><a href="#lookups"><span class="menu__icon">🔎</span>Lookups</a></li>
 				<li><a href="#querying"><span class="menu__icon">🔍</span>Querying</a></li>
-				<li><a href="#migrations"><span class="menu__icon">🏗️</span>Migrations</a></li>
 				<li><a href="#errors"><span class="menu__icon">⚠️</span>Errors</a></li>
+				<li><a href="#upgrading"><span class="menu__icon">🏗️</span>Upgrading</a></li>
 				<li><a href="#example"><span class="menu__icon">💯</span>Example</a></li>
 				<li><a href="https://github.com/SectionCo/activeso"><span class="menu__icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.02.16 1.83.08 2.12.51.53.82 1.25.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg> </span>GitHub</a></li>
 			</menu>
@@ -37,13 +38,13 @@
 
 	<main>
 		<section id="hello">
-			<b>Define a struct, get a table.</b> <a href="https://github.com/SectionCo/activeso">ActiveSo</a> is a small active record–like persistence layer for <a href="https://go.dev">Go</a> structs, built on <a href="https://turso.tech">Turso</a>. Create, find, save, and delete directly on your Go values — explicit and lightweight.
+			<b>Define a struct, map it to your table.</b> <a href="https://github.com/SectionCo/activeso">ActiveSo</a> is a small active record–like persistence layer for <a href="https://go.dev">Go</a> structs, backed by <a href="https://turso.tech">Turso</a>. It writes the SQL for creating, reading, updating, and deleting records right on your Go values. You own your tables and their migrations; ActiveSo checks that they match your Go types.
 		</section>
 
 		<div class="intro__meta">
 			<span>A <a href="https://section.co">Section Co.</a> project</span>
 			<span>·</span>
-			<span><a href="https://github.com/SectionCo/activeso/releases/tag/v1.0.5">v1.0.5</a></span>
+			<span><a href="https://github.com/SectionCo/activeso/releases/tag/v2.0.0">v2.0.0</a></span>
 			<span>·</span>
 			<span><a href="https://github.com/SectionCo/activeso/blob/main/LICENSE">MIT licensed</a></span>
 		</div>
@@ -53,8 +54,7 @@
 				View on GitHub
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
 			</a>
-			<span class="chip"><code>go get github.com/sectionco/activeso</code><button type="button" data-copy="go get github.com/sectionco/activeso" aria-label="Copy: go get github.com/sectionco/activeso">copy</button></span>
-			<span class="chip"><code>go -C example run .</code><button type="button" data-copy="go -C example run ." aria-label="Copy: go -C example run .">copy</button></span>
+			<span class="chip"><code>go get github.com/sectionco/activeso/v2</code><button type="button" data-copy="go get github.com/sectionco/activeso/v2" aria-label="Copy: go get github.com/sectionco/activeso/v2">copy</button></span>
 		</div>
 
 		<h2 class="divider divider--overflow-right" id="quick-start">Quick start</h2>
@@ -65,102 +65,118 @@
 
 <span class="tok-kw">import</span> (
 	<span class="tok-str">"context"</span>
-	<span class="tok-str">"database/sql"</span>
+	<span class="tok-str">"os"</span>
 
-	<span class="tok-str">"github.com/sectionco/activeso"</span>
-	turso <span class="tok-str">"turso.tech/database/tursogo"</span>
+	<span class="tok-str">"github.com/sectionco/activeso/v2"</span>
 )
 
 <span class="tok-kw">type</span> User <span class="tok-kw">struct</span> {
-	activeso.Record
+	activeso.Record <span class="tok-tag">`activeso:"timestamps"`</span>
 
-	ID        <span class="tok-kw">string</span>             <span class="tok-tag">`db:"id"`</span>
-	Email     <span class="tok-kw">string</span>             <span class="tok-tag">`db:"email" activeso:"not_null,unique"`</span>
+	ID        <span class="tok-kw">string</span>            <span class="tok-tag">`db:"id"`</span>
+	Email     <span class="tok-kw">string</span>            <span class="tok-tag">`db:"email" activeso:"not_null,unique"`</span>
 	Embedding activeso.Vector32 <span class="tok-tag">`db:"embedding"`</span>
 }
 
 <span class="tok-kw">func</span> example(ctx context.Context) <span class="tok-kw">error</span> {
-	<span class="tok-com">// Create a Turso connector and open a database/sql handle over it.</span>
-	connector, err := turso.NewConnector(<span class="tok-str">"app.db"</span>)
+	sync, err := activeso.OpenSync(ctx, activeso.SyncConfig{
+		Path:      <span class="tok-str">"app.db"</span>,
+		RemoteURL: <span class="tok-str">"turso://my-db-org.turso.io"</span>,
+		AuthToken: os.Getenv(<span class="tok-str">"TURSO_AUTH_TOKEN"</span>),
+	})
 	<span class="tok-kw">if</span> err != <span class="tok-kw">nil</span> {
 		<span class="tok-kw">return</span> err
 	}
-	db := sql.OpenDB(connector)
-	<span class="tok-kw">defer</span> db.Close()
+	<span class="tok-kw">defer</span> sync.Close()
 
-	<span class="tok-com">// When using belongs_to, enable foreign-key enforcement for this connection.</span>
-	<span class="tok-kw">if</span> _, err := db.ExecContext(ctx, <span class="tok-str">"PRAGMA foreign_keys = ON"</span>); err != <span class="tok-kw">nil</span> {
+	<span class="tok-com">// Models work on the same handle as a plain database.</span>
+	userModel := activeso.Model[User](sync.DB())
+
+	<span class="tok-com">// You own the schema, on the cloud database too. Verify catches drift.</span>
+	<span class="tok-kw">if</span> err := userModel.Verify(ctx); err != <span class="tok-kw">nil</span> {
 		<span class="tok-kw">return</span> err
 	}
 
-	<span class="tok-com">// Initialize the User model.</span>
-	userModel := activeso.Model[User](db)
-
-	<span class="tok-com">// Optional: run during setup or deployment to create or update the schema.</span>
-	<span class="tok-kw">if</span> err := userModel.AutoMigrate(ctx); err != <span class="tok-kw">nil</span> {
-		<span class="tok-kw">return</span> err
-	}
-
-	<span class="tok-com">// Create, update, and delete — right on the value.</span>
+	<span class="tok-com">// Writes are local until you push.</span>
 	user, err := userModel.Create(ctx, User{Email: <span class="tok-str">"hello@null.live"</span>})
 	<span class="tok-kw">if</span> err != <span class="tok-kw">nil</span> {
 		<span class="tok-kw">return</span> err
 	}
 
-	user.Email = <span class="tok-str">"updated@null.live"</span>
-	<span class="tok-kw">if</span> err := user.Save(ctx); err != <span class="tok-kw">nil</span> {
+	<span class="tok-com">// Sync pulls remote changes, rebases local ones on top, then pushes.</span>
+	<span class="tok-kw">if</span> err := sync.Sync(ctx); err != <span class="tok-kw">nil</span> {
 		<span class="tok-kw">return</span> err
 	}
 
-	<span class="tok-kw">return</span> user.Delete(ctx)
+	<span class="tok-com">// Records bound by Create keep working until the handle is closed.</span>
+	user.Email = <span class="tok-str">"updated@null.live"</span>
+	<span class="tok-kw">return</span> user.Save(ctx)
 }</code></pre>
 		</figure>
 
-		<section class="topic" id="mapping">
-			<h3 class="divider divider--overflow-left">A struct maps to a table</h3>
-			<p>Model uses plural snake_case table names by default — English inflection handles common and irregular forms, so <code>User</code> maps to <code>users</code>, <code>City</code> to <code>cities</code>, and <code>Person</code> to <code>people</code>. A type already named <code>Users</code> is not double-pluralized. Implement <code>TableName() string</code> when your database uses a specific or domain-specific name. The embedded <code>Record</code> holds ActiveSo's runtime persistence binding and is not a database column. The <code>activeso</code> tag adds constraints when <code>AutoMigrate(ctx)</code> runs.</p>
+		<section class="topic" id="sync">
+			<h3 class="divider divider--overflow-left">Local first, synced with Turso Cloud</h3>
+			<p>Every ActiveSo database is a local Turso file that syncs with Turso Cloud. <code>activeso.OpenSync(ctx, config)</code> is the only way to open one: it opens the file at <code>Path</code>, downloads the remote state when the file is empty, and returns a <code>*Sync</code>. Sync is database-wide, so <code>Pull</code>, <code>Push</code>, and <code>Stats</code> live on that handle, not on models.</p>
+			<div class="table-scroll" role="region" aria-label="Data table" tabindex="0">
+			<table class="table">
+				<thead>
+					<tr><th>Method</th><th>Behavior</th></tr>
+				</thead>
+				<tbody>
+					<tr><td>DB()</td><td>The <code>*sql.DB</code> to pass to <code>activeso.Model</code>.</td></tr>
+					<tr><td>Pull(ctx)</td><td>Fetches remote changes and rebases local changes on top of them. Sends nothing. Reports whether remote changes were applied.</td></tr>
+					<tr><td>Push(ctx)</td><td>Sends local changes to the remote. Fetches nothing.</td></tr>
+					<tr><td>Sync(ctx)</td><td><code>Pull</code>, then <code>Push</code> — the common “catch up and publish” case.</td></tr>
+					<tr><td>Checkpoint(ctx)</td><td>Compacts the local write-ahead log. Call it periodically on a long-lived replica with sustained writes.</td></tr>
+					<tr><td>Stats(ctx)</td><td>Local operations written since the last <code>Pull</code> (<code>CdcOperations</code>), last pull and push times, and network traffic.</td></tr>
+					<tr><td>Close()</td><td>Stops sync calls, closes every pooled connection, and releases the database, WAL, and changes files. Unpushed writes stay in the local file. Returns <code>ErrSyncBusy</code> while connections from <code>DB()</code> are still checked out.</td></tr>
+				</tbody>
+			</table>
+			</div>
+			<p><code>SyncConfig</code> takes <code>Path</code> and <code>RemoteURL</code> (both required) and <code>AuthToken</code>, plus optional <code>Namespace</code>, <code>ClientName</code>, <code>BusyTimeoutMs</code>, and <code>SkipBootstrap</code> to leave an empty local file empty until you call <code>Pull</code> yourself. Writes through models stay local until you call <code>Push</code> or <code>Sync</code>; ActiveSo never pushes for you. Always release the database with <code>sync.Close()</code> — closing the <code>*sql.DB</code> directly leaves the database files open.</p>
+		</section>
+
+		<section class="topic" id="schema">
+			<h3 class="divider divider--overflow-right">Bring your own schema</h3>
+			<p>ActiveSo reads and writes tables that already exist. <b>It does not create or migrate your schema</b> — create and change tables with whatever migration tooling you prefer. <code>Model</code> uses plural snake_case table names by default, with English inflection for common and irregular forms: <code>User</code> maps to <code>users</code>, <code>City</code> to <code>cities</code>, and <code>Person</code> to <code>people</code>. Implement <code>TableName() string</code> when your database uses a specific name.</p>
 			<div class="mapping">
 				<figure class="code">
 					<figcaption><span>User</span><span>Go</span></figcaption>
 					<pre><code><span class="tok-kw">type</span> User <span class="tok-kw">struct</span> {
-	activeso.Record
+	activeso.Record <span class="tok-tag">`activeso:"timestamps"`</span>
 
-	ID    <span class="tok-kw">string</span> <span class="tok-tag">`db:"id"`</span>
-	Email <span class="tok-kw">string</span> <span class="tok-tag">`db:"email" activeso:"not_null,unique"`</span>
-	Company <span class="tok-kw">string</span> <span class="tok-tag">`db:"company" activeso:"belongs_to=companies(id)"`</span>
-	City    <span class="tok-kw">string</span> <span class="tok-tag">`db:"city" activeso:"index"`</span>
+	ID        <span class="tok-kw">string</span>            <span class="tok-tag">`db:"id"`</span>
+	Email     <span class="tok-kw">string</span>            <span class="tok-tag">`db:"email" activeso:"not_null,unique"`</span>
+	Embedding activeso.Vector32 <span class="tok-tag">`db:"embedding"`</span>
 }</code></pre>
 				</figure>
 				<div class="mapping__arrow">maps to</div>
 				<figure class="code">
-					<figcaption><span>users</span><span>SQL</span></figcaption>
+					<figcaption><span>users</span><span>SQL you own</span></figcaption>
 					<pre><code><span class="tok-kw">CREATE TABLE</span> users (
-id                   <span class="tok-kw">TEXT</span> <span class="tok-kw">PRIMARY KEY</span>,
-email                <span class="tok-kw">TEXT</span> <span class="tok-kw">NOT NULL</span>,
-company              <span class="tok-kw">TEXT</span> <span class="tok-kw">REFERENCES</span> companies(id),
-city                 <span class="tok-kw">TEXT</span>,
-activeso_created_at <span class="tok-kw">TEXT</span> <span class="tok-kw">NOT NULL DEFAULT CURRENT_TIMESTAMP</span>,
-activeso_updated_at <span class="tok-kw">TEXT</span> <span class="tok-kw">NOT NULL DEFAULT CURRENT_TIMESTAMP</span>
+	id         <span class="tok-kw">TEXT</span> <span class="tok-kw">PRIMARY KEY</span>,
+	email      <span class="tok-kw">TEXT</span> <span class="tok-kw">NOT NULL</span>,
+	embedding  <span class="tok-kw">BLOB</span>,
+	created_at <span class="tok-kw">TEXT</span> <span class="tok-kw">NOT NULL</span>,
+	updated_at <span class="tok-kw">TEXT</span> <span class="tok-kw">NOT NULL</span>
 );
 
-<span class="tok-kw">CREATE UNIQUE INDEX</span> activeso_7573657273_656d61696c_unique
-	<span class="tok-kw">ON</span> users (email);
-
-<span class="tok-kw">CREATE INDEX</span> activeso_7573657273_63697479_index
-	<span class="tok-kw">ON</span> users (city);</code></pre>
+<span class="tok-kw">CREATE UNIQUE INDEX</span> users_email
+	<span class="tok-kw">ON</span> users (email);</code></pre>
 				</figure>
 			</div>
-			<p><code>db</code> tags choose column names; exported fields without one derive a snake_case name. Plain strings, numbers, and booleans read SQL <code>NULL</code> as their Go zero value, keeping rows readable after additive nullable migrations. Use <code>database/sql</code> nullable types, such as <code>sql.NullString</code>, when your application must distinguish <code>NULL</code> from an empty or zero value.</p>
+			<p><b>Every persisted field needs a <code>db</code> tag</b> naming its column. ActiveSo does not guess column names, so <code>activeso.Model[T](db)</code> panics at setup when an exported field has none; use <code>db:"-"</code> to exclude one. Columns in the table but not the struct are ignored, so you can add columns ahead of a deploy or drop a field's column later. The embedded <code>Record</code> holds ActiveSo's runtime persistence binding and is not a column.</p>
+			<p>Plain strings, numbers, and booleans read SQL <code>NULL</code> as their Go zero value, and a <code>Vector32</code> reads <code>NULL</code> as a nil vector. Use <code>sql.NullString</code>, <code>sql.NullInt64</code>, <code>sql.NullFloat64</code>, or <code>sql.NullBool</code> when your application must distinguish <code>NULL</code> from an empty or zero value — ActiveSo retains <code>Valid</code> when loading and saving.</p>
 		</section>
 
 		<section class="topic" id="timestamps">
-			<h3 class="divider divider--overflow-right">Timestamps, managed for you</h3>
-			<p>Embedding <code>activeso.Record</code> promotes <code>CreatedAt</code> and <code>UpdatedAt</code> as UTC <code>time.Time</code> fields. No model fields or tags are required: <code>AutoMigrate(ctx)</code> creates the implicit <code>activeso_created_at</code> and <code>activeso_updated_at</code> columns, including them when it upgrades an existing table.</p>
+			<h3 class="divider divider--overflow-left">Timestamps, when you opt in</h3>
+			<p><code>Record</code> promotes <code>CreatedAt</code> and <code>UpdatedAt</code>, but ActiveSo only manages them when you add the <code>timestamps</code> hint to the embedded <code>Record</code>. With the hint, the table must have <code>created_at</code> and <code>updated_at</code> columns holding UTC timestamp text. They need no defaults or triggers.</p>
 			<div class="methods">
 				<section class="method">
 					<div class="method__head">
-						<p class="method__signature">CreatedAt / UpdatedAt</p>
-						<p class="method__desc">Read the timestamps directly from any record ActiveSo created or loaded.</p>
+						<p class="method__signature">Create<span class="punct">(ctx, value)</span></p>
+						<p class="method__desc">Stamps both columns with <code>CURRENT_TIMESTAMP</code> in ActiveSo's own SQL.</p>
 					</div>
 					<figure class="code">
 						<pre><code>user, err := userModel.Create(ctx, User{Email: <span class="tok-str">"hello@null.live"</span>})
@@ -171,7 +187,7 @@ fmt.Println(user.CreatedAt, user.UpdatedAt)</code></pre>
 				<section class="method">
 					<div class="method__head">
 						<p class="method__signature">Save<span class="punct">(ctx)</span></p>
-						<p class="method__desc">Refreshes <code>UpdatedAt</code> after a successful write; <code>CreatedAt</code> stays fixed.</p>
+						<p class="method__desc">Stamps <code>updated_at</code> and never rewrites <code>created_at</code>.</p>
 					</div>
 					<figure class="code">
 						<pre><code>user.Email = <span class="tok-str">"updated@null.live"</span>
@@ -182,75 +198,179 @@ fmt.Println(user.UpdatedAt)</code></pre>
 					</figure>
 				</section>
 			</div>
-			<p>New tables use <code>CURRENT_TIMESTAMP</code> defaults. ActiveSo backfills legacy tables and installs an insert trigger to fill omitted or NULL timestamps. An update trigger refreshes <code></code>activeso_updated_at</code> on writes naming non-timestamp columns—even no-op direct SQL assignments—unless the statement supplies an update timestamp different from the row’s old value. <code>Bind(value)</code></code> attaches persistence behavior but does not load timestamps; a later successful <code>Save(ctx)</code> refreshes them.</p>
-			<p></p>Direct SQL may replace either timestamp. Changed supplied update timestamps are preserved for row-image replay; equal supplied timestamps still refresh on data-column writes, while timestamp-only updates do not invoke the refresh trigger. This is a value-based policy, not replay detection or SQL-level timestamp protection. Ordinary ActiveSo writes leave creation time unchanged and manage update time automatically; <code>Create</code> and <code></code>Save</code> do not persist assignments to the Go timestamp fields. SQL callers must supply valid UTC timestamp text, such as <code>YYYY-MM-DD HH</code>:MM:SS</code> or RFC3339.</p>
-			<p><b></b>Upgrading to v1.0.5:</b> Run <code>Auto</code>Migrate(ctx)</code> for each model to remove the old timestamp rejection guards and replace the update trigger. Updating the package alone does not change existing database triggers. Apply the migration to every database that may execute replayed writes, and validate remote Push/Pull behavior with your sync setup.</p>
+			<p>If either column is missing, the first operation fails with an <code>activeso.ErrSchemaMismatch</code> error naming both; a stored value that is not valid UTC timestamp text (<code>YYYY-MM-DD HH:MM:SS</code> or RFC3339) fails when read. Without the hint, ActiveSo never touches those columns and the Go fields stay zero. Timestamps are metadata, not an authorization boundary: raw SQL outside ActiveSo does not refresh <code>updated_at</code>, and <code>Bind</code> does not load timestamps.</p>
 		</section>
 
-		<section class="topic" id="constraints">
-			<h3 class="divider divider--overflow-left">Seven constraint options</h3>
-			<p>Constraints live in the struct tag. An unknown or malformed <code>activeso</code> constraint causes <code>activeso.Model[T](db)</code> to panic, so schema mistakes are caught during setup.</p>
+		<section class="topic" id="hints">
+			<h3 class="divider divider--overflow-right">Hints describe your table</h3>
+			<p>Hints live in the <code>activeso</code> struct tag and describe what your table already enforces. <b>Hints never change the database</b> — <code>Verify</code> checks them. An unknown or malformed hint makes <code>activeso.Model[T](db)</code> panic, so mistakes surface during setup.</p>
 			<div class="table-scroll" role="region" aria-label="Data table" tabindex="0">
 			<table class="table">
 				<thead>
-					<tr><th>Option</th><th>AutoMigrate(ctx) behavior</th><th>Write behavior</th></tr>
+					<tr><th>Hint</th><th>Meaning</th><th>Runtime behavior</th></tr>
 				</thead>
 				<tbody>
 					<tr>
-						<td>not_null</td>
-						<td>Adds <code>NOT NULL</code> when creating a table. ActiveSo refuses to add a new required column to an existing table automatically.</td>
-						<td>Turso rejects <code>NULL</code> values.</td>
+						<td>primary_key</td>
+						<td>The field is the table's primary key.</td>
+						<td>Selects the identity used by <code>Find</code>, <code>Save</code>, <code>Delete</code>, and <code>Bind</code>.</td>
 					</tr>
 					<tr>
 						<td>unique</td>
-						<td>Creates a stable unique index named <code>activeso_&lt;table&gt;_&lt;column&gt;_unique</code>.</td>
-						<td><code>Create</code> and <code>Save</code> check for an existing value first and return an error matching <code>activeso.ErrUnique</code>; the Turso index remains the concurrency-safe authority.</td>
+						<td>A unique index covers exactly this column.</td>
+						<td>When Turso rejects a write, <code>Create</code> and <code>Save</code> return an <code>activeso.UniqueError</code> matching <code>activeso.ErrUnique</code>.</td>
 					</tr>
 					<tr>
-						<td><code>unique_with=columnA+columnB+...</code></td>
-						<td>Creates a stable composite unique index beginning with the field carrying the tag, followed by the <code>+</code>-separated mapped columns in the order written. Do not repeat the tagged field in the list.</td>
+						<td><code>unique_with=column[+column...]</code></td>
+						<td>A composite unique index begins with this column and continues with the named columns, in order. Do not repeat the tagged column.</td>
 						<td>Turso rejects duplicate combinations with an error matching <code>activeso.ErrUnique</code>.</td>
 					</tr>
 					<tr>
 						<td>index</td>
-						<td>Creates a stable non-unique index for the table and column.</td>
-						<td>Makes equality lookups with <code>FindBy</code> eligible to use a Turso index.</td>
+						<td>An index begins with this column.</td>
+						<td>Makes <code>FindBy</code> lookups eligible to use the index.</td>
 					</tr>
 					<tr>
-						<td>primary_key</td>
-						<td>Declares the field as the table primary key.</td>
-						<td>Sets the identity used by <code>Find</code>, <code>Save</code>, and <code>Delete</code>.</td>
+						<td>not_null</td>
+						<td>The column is declared <code>NOT NULL</code>.</td>
+						<td>Turso rejects <code>NULL</code> values.</td>
 					</tr>
 					<tr>
 						<td>belongs_to=table(column)</td>
-						<td>Adds <code>REFERENCES table(column)</code> when creating a table or adding a missing nullable column.</td>
-						<td>With foreign-key enforcement enabled, Turso rejects non-<code>NULL</code> values missing from the referenced column.</td>
+						<td>The column has a foreign key to <code>table(column)</code>.</td>
+						<td>Turso rejects non-<code>NULL</code> values missing from the referenced column.</td>
 					</tr>
 					<tr>
 						<td>on_delete=cascade</td>
-						<td>Adds <code>ON DELETE CASCADE</code> to a <code>belongs_to</code> foreign key on the same field when creating a table or adding a missing nullable column. Requires <code>belongs_to</code>.</td>
-						<td>With foreign-key enforcement enabled, deleting a referenced row also deletes its matching child rows.</td>
+						<td>The <code>belongs_to</code> foreign key uses <code>ON DELETE CASCADE</code>. Requires <code>belongs_to</code>.</td>
+						<td>Deleting a referenced row also deletes its matching child rows.</td>
 					</tr>
 				</tbody>
 			</table>
 			</div>
-			<p>If no field has <code>primary_key</code>, ActiveSo uses the field mapped to <code>id</code>. Exactly one primary key is required. Supported types are strings, booleans, signed integers, <code>uint8</code>–<code>uint32</code>, and floats; <code>uint</code> and <code>uint64</code> are not supported because Turso stores integers as signed 64-bit values.</p>
-		</section>
-
-		<section class="topic" id="relationships">
-			<h3 class="divider divider--overflow-right">Relationships stay explicit</h3>
-			<p>Use <code>belongs_to=table(column)</code> on the scalar foreign-key field. ActiveSo creates an inline <code>REFERENCES</code> constraint when it creates the table, while your model remains an ordinary Go struct. Add <code>on_delete=cascade</code> on the same field when deleting a parent should also delete its child rows.</p>
+			<p>If no field has <code>primary_key</code>, ActiveSo uses the field mapped to <code>id</code>. Exactly one primary key is required, using strings, booleans, signed integers, <code>uint8</code>–<code>uint32</code>, or floats; <code>uint</code> and <code>uint64</code> are rejected because Turso stores integers as signed 64-bit values. A primary key satisfies <code>not_null</code> and <code>index</code>. On the embedded <code>Record</code>, the only hint is <code>timestamps</code>.</p>
 			<figure class="code">
 				<figcaption><span>city.go</span><span>Go</span></figcaption>
 				<pre><code><span class="tok-kw">type</span> City <span class="tok-kw">struct</span> {
 	activeso.Record
 
 	ID       <span class="tok-kw">string</span> <span class="tok-tag">`db:"id"`</span>
-	Name     <span class="tok-kw">string</span> <span class="tok-tag">`db:"name"`</span>
+	Name     <span class="tok-kw">string</span> <span class="tok-tag">`db:"name" activeso:"not_null,index"`</span>
 	RegionID <span class="tok-kw">string</span> <span class="tok-tag">`db:"region_id" activeso:"not_null,belongs_to=regions(id),on_delete=cascade"`</span>
 }</code></pre>
 			</figure>
-			<p>Enable <code>PRAGMA foreign_keys = ON</code> before using models with <code>belongs_to</code>. SQLite-compatible enforcement is connection-specific, so applications using a connection pool must configure every connection. Without <code>on_delete=cascade</code>, the foreign key keeps its default delete behavior. <code>AutoMigrate(ctx)</code> cannot attach a foreign key to an existing column or change an existing foreign key to cascade; use a dedicated migration for either schema change.</p>
+			<p><b>Foreign keys are enforced on every ActiveSo write outside a transaction.</b> <code>Create</code>, <code>Save</code>, and <code>Delete</code> turn on <code>PRAGMA foreign_keys</code> for the exact pooled connection that runs the write, so a model cannot persist orphaned rows or delete a referenced parent. Your own direct SQL on <code>sync.DB()</code> is not covered. Writes on a <code>*sql.Tx</code> run as-is, because SQLite ignores the pragma once a transaction has begun, so a transaction from <code>sync.DB().BeginTx</code> does not enforce foreign keys. Take one connection, enable the pragma on it, and run statements or begin transactions there.</p>
+			<figure class="code">
+				<pre><code>conn, err := sync.DB().Conn(ctx)
+<span class="tok-kw">if</span> err != <span class="tok-kw">nil</span> {
+	<span class="tok-kw">return</span> err
+}
+<span class="tok-kw">defer</span> conn.Close()
+<span class="tok-kw">if</span> _, err := conn.ExecContext(ctx, <span class="tok-str">"PRAGMA foreign_keys = ON"</span>); err != <span class="tok-kw">nil</span> {
+	<span class="tok-kw">return</span> err
+}
+tx, err := conn.BeginTx(ctx, <span class="tok-kw">nil</span>)</code></pre>
+			</figure>
+		</section>
+
+		<section class="topic" id="verify">
+			<h3 class="divider divider--overflow-left">Verify catches drift</h3>
+			<p>Because ActiveSo trusts your tables, it can check that they match your model. There are two levels, and neither ever changes the database.</p>
+			<div class="methods">
+				<section class="method">
+					<div class="method__head">
+						<p class="method__signature">Automatic structural check</p>
+						<p class="method__desc">The first <code>Create</code>, <code>Find</code>, query, <code>Save</code>, or <code>Delete</code> checks that the table, every mapped column, and any <code>timestamps</code> columns exist, and that the primary key is a <code>PRIMARY KEY</code> or has a single-column unique index. A failure is retried on the next call; a pass is remembered for the model's lifetime, so create a model once and reuse it.</p>
+					</div>
+				</section>
+				<section class="method">
+					<div class="method__head">
+						<p class="method__signature">Verify<span class="punct">(ctx)</span></p>
+						<p class="method__desc">Adds column types against Go types and every <code>not_null</code>, <code>unique</code>, <code>unique_with</code>, <code>index</code>, <code>belongs_to</code>, and <code>on_delete=cascade</code> hint. Call it at startup, after a <code>Pull</code>, or in a test.</p>
+					</div>
+				</section>
+				<section class="method method--wide">
+					<div class="method__head">
+						<p class="method__signature">SchemaError</p>
+						<p class="method__desc">Lists every problem found and matches <code>activeso.ErrSchemaMismatch</code> with <code>errors.Is</code>.</p>
+					</div>
+					<figure class="code">
+						<pre><code><span class="tok-kw">if</span> err := userModel.Verify(ctx); err != <span class="tok-kw">nil</span> {
+	<span class="tok-kw">var</span> schemaError *activeso.SchemaError
+	<span class="tok-kw">if</span> errors.As(err, &amp;schemaError) {
+		<span class="tok-kw">for</span> _, problem := <span class="tok-kw">range</span> schemaError.Problems {
+			log.Println(problem)
+			<span class="tok-com">// hint unique on email, but no unique index covers exactly that column</span>
+		}
+	}
+	<span class="tok-kw">return</span> err
+}</code></pre>
+					</figure>
+				</section>
+			</div>
+			<p>A field type ActiveSo cannot map to a column is reported unless it implements <code>driver.Valuer</code> and <code>sql.Scanner</code>. A clean <code>Verify</code> also lets later operations skip their first-use structural check, which matters most inside transactions.</p>
+		</section>
+
+		<section class="topic" id="transactions">
+			<h3 class="divider divider--overflow-right">Transactions you control</h3>
+			<p>ActiveSo accepts any <code>activeso.Executor</code>: <code>*sql.DB</code>, <code>*sql.Tx</code>, or <code>*sql.Conn</code>. You begin, commit, and roll back; ActiveSo only runs statements on the executor you give it. Every write and the single-record read has a transaction twin.</p>
+			<div class="table-scroll" role="region" aria-label="Data table" tabindex="0">
+			<table class="table">
+				<thead>
+					<tr><th>Normal</th><th>In a transaction</th></tr>
+				</thead>
+				<tbody>
+					<tr><td>Create(ctx, value)</td><td><code>CreateTx(ctx, tx, value)</code></td></tr>
+					<tr><td>Find(ctx, id)</td><td><code>FindTx(ctx, tx, id)</code></td></tr>
+					<tr><td>record.Save(ctx)</td><td><code>record.SaveTx(ctx, tx)</code></td></tr>
+					<tr><td>record.Delete(ctx)</td><td><code>record.DeleteTx(ctx, tx)</code></td></tr>
+				</tbody>
+			</table>
+			</div>
+			<div class="methods">
+				<section class="method">
+					<div class="method__head">
+						<p class="method__signature">CreateTx + SaveTx</p>
+						<p class="method__desc">Runs one call on <code>tx</code>. Returned records stay bound to the original model.</p>
+					</div>
+					<figure class="code">
+						<pre><code>tx, err := db.BeginTx(ctx, <span class="tok-kw">nil</span>)
+<span class="tok-kw">if</span> err != <span class="tok-kw">nil</span> {
+	<span class="tok-kw">return</span> err
+}
+<span class="tok-kw">defer</span> tx.Rollback()
+
+user, err := userModel.CreateTx(ctx, tx, User{Email: <span class="tok-str">"hello@null.live"</span>})
+<span class="tok-kw">if</span> err != <span class="tok-kw">nil</span> {
+	<span class="tok-kw">return</span> err
+}
+user.Email = <span class="tok-str">"updated@null.live"</span>
+<span class="tok-kw">if</span> err := user.SaveTx(ctx, tx); err != <span class="tok-kw">nil</span> {
+	<span class="tok-kw">return</span> err
+}
+
+<span class="tok-kw">return</span> tx.Commit()</code></pre>
+					</figure>
+				</section>
+				<section class="method">
+					<div class="method__head">
+						<p class="method__signature">Using<span class="punct">(executor)</span></p>
+						<p class="method__desc">A transaction-scoped view for queries or several operations. Records it creates or loads stay on the transaction for <code>Save</code> and <code>Delete</code>.</p>
+					</div>
+					<figure class="code">
+						<pre><code>txUsers := userModel.Using(tx)
+matches, err := txUsers.Where(<span class="tok-str">"email LIKE ?"</span>, <span class="tok-str">"%@null.live"</span>).All(ctx)
+<span class="tok-kw">for</span> _, match := <span class="tok-kw">range</span> matches {
+	match.Email = <span class="tok-str">"migrated@null.live"</span>
+	<span class="tok-kw">if</span> err := match.Save(ctx); err != <span class="tok-kw">nil</span> { <span class="tok-com">// runs on tx</span>
+		<span class="tok-kw">return</span> err
+	}
+}</code></pre>
+					</figure>
+				</section>
+			</div>
+			<p><b>Foreign keys inside a transaction depend on its connection.</b> SQLite ignores <code>PRAGMA foreign_keys</code> after a transaction begins, so a <code>*sql.Tx</code> from <code>db.BeginTx</code> can commit orphaned rows. For models with <code>belongs_to</code>, take a connection, enable the pragma, and begin the transaction on it — see <a href="#hints">Hints</a>.</p>
+			<p>A <code>*sql.Tx</code> or <code>*sql.Conn</code> you pass must belong to the model's database; ActiveSo cannot check this. Records from a <code>Using</code> view fail with <code>sql.ErrTxDone</code> once the transaction ends, and <code>Using(tx).Bind(record)</code> moves an existing record into one. Turso begins transactions with snapshot isolation and ignores <code>sql.TxOptions</code>. With <code>db.SetMaxOpenConns(1)</code>, an open transaction holds the only connection, so root-model calls wait until it ends — use <code>Using(tx)</code> or the <code>Tx</code> methods inside.</p>
 		</section>
 
 		<section class="topic" id="lifecycle">
@@ -296,32 +416,13 @@ err := user.Save(ctx)</code></pre>
 user, err := userModel.Bind(externalUser)</code></pre>
 					</figure>
 				</section>
-				<section class="method method--wide">
-					<div class="method__head">
-						<p class="method__signature">Full lifecycle</p>
-						<p class="method__desc">Create, mutate and save, delete — one bound <code>*T</code> from start to finish.</p>
-					</div>
-					<figure class="code">
-						<pre><code>user, err := userModel.Create(ctx, User{Email: <span class="tok-str">"hello@null.live"</span>})
-<span class="tok-kw">if</span> err != <span class="tok-kw">nil</span> {
-	<span class="tok-kw">return</span> err
-}
-
-user.Email = <span class="tok-str">"updated@null.live"</span>
-<span class="tok-kw">if</span> err := user.Save(ctx); err != <span class="tok-kw">nil</span> {
-	<span class="tok-kw">return</span> err
-}
-
-<span class="tok-kw">return</span> user.Delete(ctx)</code></pre>
-					</figure>
-				</section>
 			</div>
 			<p>A record loaded outside ActiveSo must be attached first with <code>Bind(value)</code>; an unbound record's <code>Save</code> and <code>Delete</code> return <code>activeso.ErrUnboundRecord</code>. A bound record's ID is captured when it becomes bound and cannot be changed — modifying it makes <code>Save</code> and <code>Delete</code> return <code>activeso.ErrIDChanged</code>; create a new record when you need a new identity.</p>
 		</section>
 
 		<section class="topic" id="querying">
 			<h3 class="divider divider--overflow-right">Querying, including vectors</h3>
-			<p>Every call below is actual API surface. <code>FindBy</code> provides a mapped-column equality lookup; parameterized <code>Where</code> chains with <code>OrderBy</code>, <code>Limit</code>, <code>First</code>, and <code>All</code>; and <code>Nearest</code> orders by cosine distance over a Turso <code>vector32</code> column.</p>
+			<p><code>FindBy</code> provides a mapped-column equality lookup; parameterized <code>Where</code> chains with <code>OrderBy</code>, <code>Limit</code>, <code>First</code>, and <code>All</code>; and <code>Nearest</code> orders by cosine distance over a Turso <code>vector32</code> column.</p>
 			<div class="methods">
 				<section class="method">
 					<div class="method__head">
@@ -335,20 +436,13 @@ user.Email = <span class="tok-str">"updated@null.live"</span>
 }</code></pre>
 					</figure>
 				</section>
-				<section class="method" id="lookups">
+				<section class="method">
 					<div class="method__head">
 						<p class="method__signature">FindBy<span class="punct">(ctx, column, value)</span></p>
 						<p class="method__desc">Loads every record whose mapped column equals <code>value</code>. The column must exist on the model, so ActiveSo never accepts arbitrary SQL here.</p>
 					</div>
 					<figure class="code">
-						<pre><code><span class="tok-kw">type</span> City <span class="tok-kw">struct</span> {
-	activeso.Record
-
-	ID   <span class="tok-kw">string</span> <span class="tok-tag">`db:"id"`</span>
-	Name <span class="tok-kw">string</span> <span class="tok-tag">`db:"name" activeso:"not_null,index"`</span>
-}
-
-cities, err := cityModel.FindBy(ctx, <span class="tok-str">"name"</span>, <span class="tok-str">"Denver"</span>)</code></pre>
+						<pre><code>cities, err := cityModel.FindBy(ctx, <span class="tok-str">"name"</span>, <span class="tok-str">"Denver"</span>)</code></pre>
 					</figure>
 				</section>
 				<section class="method">
@@ -365,29 +459,6 @@ cities, err := cityModel.FindBy(ctx, <span class="tok-str">"name"</span>, <span 
 				</section>
 				<section class="method">
 					<div class="method__head">
-						<p class="method__signature">CreatedAt</p>
-						<p class="method__desc">The UTC time when ActiveSo created the record.</p>
-					</div>
-					<figure class="code">
-						<pre><code>user, err := userModel.Create(ctx, User{Email: <span class="tok-str">"hello@null.live"</span>})
-fmt.Println(user.CreatedAt)</code></pre>
-					</figure>
-				</section>
-				<section class="method">
-					<div class="method__head">
-						<p class="method__signature">UpdatedAt</p>
-						<p class="method__desc">The UTC time of the record's most recent successful update.</p>
-					</div>
-					<figure class="code">
-						<pre><code>user.Email = <span class="tok-str">"updated@null.live"</span>
-<span class="tok-kw">if</span> err := user.Save(ctx); err != <span class="tok-kw">nil</span> {
-<span class="tok-kw">return</span> err
-}
-fmt.Println(user.UpdatedAt)</code></pre>
-					</figure>
-				</section>
-				<section class="method">
-					<div class="method__head">
 						<p class="method__signature">Where<span class="punct">(predicate, arguments...)</span></p>
 						<p class="method__desc">Starts a parameterized query — one argument for each <code>?</code> placeholder.</p>
 					</div>
@@ -395,21 +466,10 @@ fmt.Println(user.UpdatedAt)</code></pre>
 						<pre><code>user, err := userModel.Where(<span class="tok-str">"email = ?"</span>, <span class="tok-str">"hello@null.live"</span>).First(ctx)</code></pre>
 					</figure>
 				</section>
-				<section class="method">
-					<div class="method__head">
-						<p class="method__signature">First<span class="punct">(ctx)</span></p>
-						<p class="method__desc">Loads the first matching result; <code>activeso.ErrNotFound</code> when none match.</p>
-					</div>
-					<figure class="code">
-						<pre><code>user, err := userModel.Where(<span class="tok-str">"email LIKE ?"</span>, <span class="tok-str">"%@null.live"</span>).
-	OrderBy(<span class="tok-str">"email ASC"</span>).
-	First(ctx)</code></pre>
-					</figure>
-				</section>
 				<section class="method method--wide">
 					<div class="method__head">
 						<p class="method__signature">Where + OrderBy + Limit + All<span class="punct">(ctx)</span></p>
-						<p class="method__desc">Query parts compose. <code>OrderBy</code> takes a raw SQL expression; <code>Limit</code> takes a positive maximum row count; terminators return bound records.</p>
+						<p class="method__desc">Query parts compose. <code>OrderBy</code> takes a raw SQL expression; <code>Limit</code> takes a positive maximum row count; <code>First</code> returns <code>activeso.ErrNotFound</code> when nothing matches.</p>
 					</div>
 					<figure class="code">
 						<pre><code>excludedID := <span class="tok-str">"8b291a21-e69b-47ed-a3e0-f43e7609b26d"</span>
@@ -440,51 +500,70 @@ users, err = userModel.Where(
 			<p><code>OrderBy(expression)</code> called after <code>Nearest</code> replaces the vector-distance ordering and discards that ordering's embedding argument.</p>
 		</section>
 
-		<section class="topic" id="migrations">
-			<h3 class="divider divider--overflow-left">Migrations stay deliberate</h3>
-			<p><code>AutoMigrate(ctx)</code> is intentionally additive and safe: it creates tables, adds missing nullable columns, and creates tagged unique and ordinary indexes, but never drops data, removes indexes, changes column types, or tightens existing constraints. It can add a foreign key with a newly added nullable column, but cannot attach one to an existing column. Run it during application setup or deployment; normal model initialization and record operations do not require it.</p>
-			<div class="table-scroll" role="region" aria-label="Data table" tabindex="0">
-			<table class="table">
-				<thead>
-					<tr><th>Operation</th><th>Required model change</th><th>Effect</th></tr>
-				</thead>
-				<tbody>
-					<tr><td>DropUnique(ctx, column)</td><td>Remove <code>unique</code> from the column's <code>activeso</code> tag.</td><td>Drops ActiveSo's named unique index.</td></tr>
-					<tr><td>DropUniqueWith(ctx, columns...)</td><td>Remove <code>unique_with</code> from the tagged field.</td><td>Drops ActiveSo's named composite unique index; pass its columns in the original order.</td></tr>
-					<tr><td>DropColumn(ctx, column)</td><td>Remove the field from the model.</td><td>Rebuilds the table without the column.</td></tr>
-					<tr><td>ChangeColumnType(ctx, column)</td><td>Change the Go field's type.</td><td>Rebuilds the table using the newly inferred Turso column type.</td></tr>
-					<tr><td>SetNotNull(ctx, column)</td><td>Add <code>not_null</code> to the field's <code>activeso</code> tag.</td><td>Rebuilds the table with <code>NOT NULL</code>; it fails if any existing row contains <code>NULL</code>.</td></tr>
-				</tbody>
-			</table>
-			</div>
-			<p>Removing a <code>unique_with</code> tag is also deliberate: <code>AutoMigrate(ctx)</code> rejects the implicit removal and points to <code>DropUniqueWith(ctx, columns...)</code>. Removing a struct field alone never drops a database column; use <code>DropColumn</code> explicitly. Each column migration changes only its named target. Rebuilds run inside a transaction — unsupported dependencies cause an error, and failed migrations roll back. Run destructive changes during a controlled deployment with a production backup; tables with dependent views, triggers, foreign keys, generated columns, or unsupported primary-key changes need a dedicated migration.</p>
-		</section>
-
 		<section class="topic" id="errors">
-			<h3 class="divider divider--overflow-right">Four sentinel errors</h3>
-			<p>Match with <code>errors.Is</code>. Unique conflicts come back as a <code>UniqueError</code> that carries the offending field — <code>activeso: email must be unique</code>.</p>
+			<h3 class="divider divider--overflow-left">Sentinel errors</h3>
+			<p>Match with <code>errors.Is</code>. Unique conflicts come back as a <code>UniqueError</code> that carries the offending field — <code>activeso: email must be unique</code> — and schema mismatches as a <code>*SchemaError</code> listing every problem.</p>
 			<ul class="errors">
 				<li><code>ErrNotFound</code><span>A query did not return a matching record.</span></li>
 				<li><code>ErrUnboundRecord</code><span>A record was not created, loaded, or bound through a Model.</span></li>
 				<li><code>ErrIDChanged</code><span>A bound record's primary key was modified.</span></li>
-				<li><code>ErrUnique</code><span>A value conflicts with a <code>unique</code> field or <code>unique_with</code> combination.</span></li>
+				<li><code>ErrUnique</code><span>The database rejected a write for violating a unique index.</span></li>
+				<li><code>ErrSchemaMismatch</code><span>A table does not match the model's <code>db</code> tags and hints.</span></li>
+				<li><code>ErrSyncClosed</code><span>A <code>Sync</code> method was called after <code>Close</code>.</span></li>
+				<li><code>ErrSyncBusy</code><span><code>Close</code> was called while connections from <code>DB()</code> were still checked out.</span></li>
 			</ul>
+		</section>
+
+		<section class="topic" id="upgrading">
+			<h3 class="divider divider--overflow-right">Upgrading from 1.x</h3>
+			<p>ActiveSo 2.0 removes all schema management. Plan these changes together, and back up production data before running any migration.</p>
+			<div class="table-scroll" role="region" aria-label="Data table" tabindex="0">
+			<table class="table">
+				<thead>
+					<tr><th>Change</th><th>What to do</th></tr>
+				</thead>
+				<tbody>
+					<tr><td>Import path</td><td>The module is now <code>github.com/sectionco/activeso/v2</code>.</td></tr>
+					<tr><td>Opening a database</td><td>Open with <code>activeso.OpenSync(ctx, config)</code> and pass <code>sync.DB()</code> to <code>activeso.Model</code>.</td></tr>
+					<tr><td>Migrations removed</td><td><code>AutoMigrate</code>, <code>DropUnique</code>, <code>DropUniqueWith</code>, <code>DropColumn</code>, <code>ChangeColumnType</code>, and <code>SetNotNull</code> no longer exist. Existing tables keep working; changes to them are yours to write.</td></tr>
+					<tr><td>Every field needs <code>db</code></td><td>Fields that relied on derived snake_case names now panic at <code>Model</code> setup until they are tagged.</td></tr>
+					<tr><td>Constraints are hints</td><td>The tag syntax is unchanged, but hints no longer create anything. <code>Verify</code> checks them.</td></tr>
+					<tr><td>Unique errors from the database</td><td><code>Create</code> and <code>Save</code> no longer run a check-then-write query. Keep the unique index in your schema; <code>Verify</code> reports a missing one.</td></tr>
+					<tr><td>Timestamps opt-in and renamed</td><td>Add <code>activeso:"timestamps"</code> to the embedded <code>Record</code>. Columns are now <code>created_at</code> and <code>updated_at</code>, stamped in ActiveSo's SQL instead of triggers.</td></tr>
+				</tbody>
+			</table>
+			</div>
+			<p>To move a 1.x table to the new timestamp columns, drop ActiveSo's triggers first — renaming a column rewrites trigger bodies, and the old triggers would then refer to columns that no longer exist — then rename the columns. List triggers with <code>SELECT name FROM sqlite_schema WHERE type = 'trigger'</code>.</p>
+			<figure class="code">
+				<figcaption><span>users</span><span>SQL</span></figcaption>
+				<pre><code><span class="tok-kw">DROP TRIGGER IF EXISTS</span> activeso_7573657273_timestamps_insert;
+<span class="tok-kw">DROP TRIGGER IF EXISTS</span> activeso_7573657273_timestamps_update;
+<span class="tok-kw">DROP TRIGGER IF EXISTS</span> activeso_7573657273_timestamps_protect_created_at;
+<span class="tok-kw">DROP TRIGGER IF EXISTS</span> activeso_7573657273_timestamps_protect_updated_at;
+<span class="tok-kw">ALTER TABLE</span> users <span class="tok-kw">RENAME COLUMN</span> activeso_created_at <span class="tok-kw">TO</span> created_at;
+<span class="tok-kw">ALTER TABLE</span> users <span class="tok-kw">RENAME COLUMN</span> activeso_updated_at <span class="tok-kw">TO</span> updated_at;</code></pre>
+			</figure>
+			<p>Indexes that 1.x created, named like <code>activeso_&lt;hex&gt;_&lt;hex&gt;_unique</code>, keep working unchanged. Never open a live synced replica with a plain non-sync connection or the SQLite CLI; use the sync SDK or an offline copy.</p>
 		</section>
 
 		<section class="topic" id="example">
 			<h3 class="divider divider--overflow-left">A working Echo v5 example</h3>
-			<p>The repository ships a small Echo v5 server with a single page for creating, editing, and deleting users. It creates a local <code>activeso-example.db</code> and listens on <code>localhost:8080</code>.</p>
-			<div class="intro__actions">
-				<span class="chip"><code>go -C example run .</code><button type="button" data-copy="go -C example run ." aria-label="Copy: go -C example run .">copy</button></span>
-			</div>
+			<p>The repository ships a small Echo v5 server with a single page for creating, finding, editing, and deleting users. It syncs a local <code>activeso-example.db</code> with a Turso Cloud database you own, syncs after each write, and shows any sync failure on the page — it never retries on its own. It listens on <code>localhost:8080</code>.</p>
+			<figure class="code">
+				<figcaption><span>shell</span><span>from the repository root</span></figcaption>
+				<pre><code>TURSO_DATABASE_URL=turso://my-db-org.turso.io TURSO_AUTH_TOKEN=... go -C example run .</code></pre>
+			</figure>
 			<div class="table-scroll" role="region" aria-label="Data table" tabindex="0">
 			<table class="table">
 				<thead>
 					<tr><th>Method</th><th>Path</th><th>Behavior</th></tr>
 				</thead>
 				<tbody>
-					<tr><td>GET</td><td><code>/</code></td><td>Renders the create form and existing users.</td></tr>
+					<tr><td>GET</td><td><code>/</code></td><td>Renders the create form, find form, and existing users.</td></tr>
+					<tr><td>GET</td><td><code>/users/find</code></td><td>Finds a user by ID from the <code>id</code> query parameter.</td></tr>
 					<tr><td>POST</td><td><code>/users</code></td><td>Creates a user from an email address.</td></tr>
+					<tr><td>POST</td><td><code>/users/batch</code></td><td>Creates one user per line in a single transaction; if any fails, none are saved.</td></tr>
+					<tr><td>POST</td><td><code>/sync</code></td><td>Pulls remote changes and pushes local ones.</td></tr>
 					<tr><td>POST</td><td><code>/users/:id</code></td><td>Updates a user's email address.</td></tr>
 					<tr><td>POST</td><td><code>/users/:id/delete</code></td><td>Deletes a user.</td></tr>
 				</tbody>
@@ -503,7 +582,7 @@ users, err = userModel.Where(
 		<nav class="footer__links" aria-label="Project links">
 			<a href="https://github.com/SectionCo/activeso">github.com/SectionCo/activeso</a>
 			<a href="https://github.com/SectionCo/activeso/blob/main/README.md">README</a>
-			<a href="https://docs.turso.tech/">Turso docs</a>
+			<a href="https://docs.turso.tech/sdk/go">Turso Go SDK</a>
 		</nav>
 	</footer>
 
