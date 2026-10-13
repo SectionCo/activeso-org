@@ -81,7 +81,7 @@
 <span class="tok-kw">func</span> example(ctx context.Context) <span class="tok-kw">error</span> {
 	sync, err := activeso.OpenSync(ctx, activeso.SyncConfig{
 		Path:      <span class="tok-str">"app.db"</span>,
-		RemoteURL: <span class="tok-str">"libsql://my-db-org.turso.io"</span>,
+		RemoteURL: <span class="tok-str">"turso://my-db-org.turso.io"</span>,
 		AuthToken: os.Getenv(<span class="tok-str">"TURSO_AUTH_TOKEN"</span>),
 	})
 	<span class="tok-kw">if</span> err != <span class="tok-kw">nil</span> {
@@ -551,7 +551,7 @@ users, err = userModel.Where(
 			<p>The repository ships a small Echo v5 server with a single page for creating, finding, editing, and deleting users. It syncs a local <code>activeso-example.db</code> with a Turso Cloud database you own, syncs after each write, and shows any sync failure on the page — it never retries on its own. It listens on <code>localhost:8080</code>.</p>
 			<figure class="code">
 				<figcaption><span>shell</span><span>from the repository root</span></figcaption>
-				<pre><code>TURSO_DATABASE_URL=libsql://my-db-org.turso.io TURSO_AUTH_TOKEN=... go -C example run .</code></pre>
+				<pre><code>TURSO_DATABASE_URL=turso://my-db-org.turso.io TURSO_AUTH_TOKEN=... go -C example run .</code></pre>
 			</figure>
 			<div class="table-scroll" role="region" aria-label="Data table" tabindex="0">
 			<table class="table">
